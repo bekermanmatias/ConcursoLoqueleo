@@ -25,25 +25,17 @@ const {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
-  <body class="antialiased">
-    <div class="page-shell">
-      <div class="fondo-scroll" aria-hidden="true">
-        <img src="/fondo.png" alt="" decoding="sync" fetchpriority="high" />
-      </div>
+  <body class="antialiased overflow-x-hidden">
+    <Header />
 
-      <div class="page-content">
-        <Header />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main>
+        <slot />
+      </main>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <main>
-            <slot />
-          </main>
-
-          <footer class="py-10 text-center text-sm text-[color:var(--color-ink-700)]">
-            <p>© {new Date().getFullYear()} Loqueleo · Concurso Soy Loqueleo 2026</p>
-          </footer>
-        </div>
-      </div>
+      <footer class="py-10 text-center text-sm text-[color:var(--color-ink-700)]">
+        <p>© {new Date().getFullYear()} Loqueleo · Concurso Soy Loqueleo 2026</p>
+      </footer>
     </div>
   </body>
 </html>

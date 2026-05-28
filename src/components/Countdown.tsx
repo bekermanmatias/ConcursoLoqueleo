@@ -37,20 +37,20 @@ export default function Countdown() {
   }, []);
 
   return (
-    <div className="glass-card rounded-3xl p-5 sm:p-6 max-w-md">
-      <p className="text-sm font-medium text-[#555] mb-4">
+    <div className="w-full text-center">
+      <p className="text-sm sm:text-base font-medium text-[#555] mb-3">
         Faltan para el cierre de inscripciones
       </p>
-      <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+      <div className="grid grid-cols-4 gap-5 sm:gap-8 text-center max-w-md mx-auto">
         {units.map(({ key, label, color }) => (
           <div key={key}>
             <p
-              className="text-2xl sm:text-3xl font-extrabold tabular-nums"
+              className="text-4xl sm:text-5xl font-extrabold tabular-nums leading-none"
               style={{ color }}
             >
               {String(time[key]).padStart(2, "0")}
             </p>
-            <p className="text-xs font-semibold text-[#666] mt-0.5">{label}</p>
+            <p className="text-sm font-semibold text-[#666] mt-1">{label}</p>
           </div>
         ))}
       </div>

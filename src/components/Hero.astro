@@ -28,9 +28,22 @@ import Countdown from "./Countdown.tsx";
       </a>
     </div>
 
-    <!-- Countdown -->
-    <div class="lg:pt-4">
-      <Countdown client:load />
+    <!-- Astronauta y alien a la derecha -->
+    <div class="lg:pt-2 lg:translate-x-8">
+      <img
+        src="/ASTRONAUTA Y ALIEN.png"
+        alt="Astronauta y alien"
+        class="astronaut-float w-full max-w-[620px] xl:max-w-[760px] h-auto object-contain mx-auto mt-8 lg:mt-20 opacity-75"
+        decoding="async"
+      />
+    </div>
+  </div>
+
+  <div class="relative z-20 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen -mt-72 sm:-mt-80 lg:-mt-96 bg-white pt-5 sm:pt-7 pb-48 sm:pb-56 lg:pb-64">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto">
+        <Countdown client:load />
+      </div>
     </div>
   </div>
 </section>

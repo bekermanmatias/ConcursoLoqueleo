@@ -25,38 +25,8 @@
   }
 
   body {
-    background-color: #f5efe4;
+    background-color: #ffffff;
     min-height: 100vh;
-  }
-
-  .page-shell {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-  .fondo-scroll,
-  .page-content {
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  .fondo-scroll {
-    z-index: 0;
-    pointer-events: none;
-    line-height: 0;
-  }
-
-  .fondo-scroll img {
-    width: 100%;
-    height: auto;
-    display: block;
-    image-rendering: auto;
-  }
-
-  .page-content {
-    z-index: 1;
-    min-height: 100%;
   }
 }
 
@@ -75,5 +45,22 @@
   .btn-primary:hover {
     background: var(--color-brand-red-hover);
     transform: translateY(-1px);
+  }
+
+  @keyframes astronaut-float {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -10px, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .astronaut-float {
+    animation: astronaut-float 6s ease-in-out infinite;
+    will-change: transform;
   }
 }
