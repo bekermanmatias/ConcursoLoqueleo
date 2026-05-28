@@ -1,58 +1,63 @@
 ---
 import type { Book } from "../data/books";
-import { ageCardColors, ageUiStyles } from "../data/books";
+import { ageUiStyles } from "../data/books";
 
 interface Props {
   book: Book;
 }
 
 const { book } = Astro.props;
-const cardBg = ageCardColors[book.age];
-const uiStyle = ageUiStyles[book.age];
+const { accent } = ageUiStyles[book.age];
 ---
 
-<article data-age={book.age} class="group">
+<article data-age={book.age} class="h-full">
   <div
-    class="rounded-[22px] border-2 bg-white p-3 sm:p-3.5 shadow-sm transition hover:shadow-md"
-    style={`border-color: ${uiStyle.badgeBg};`}
+    class="book-card flex h-full flex-col overflow-hidden rounded-2xl border-2 bg-white shadow-[0_2px_14px_rgba(0,0,0,0.06)] transition-shadow duration-200 hover:shadow-[0_10px_28px_rgba(0,0,0,0.1)]"
+    style={`border-color: ${accent};`}
   >
-    <a href={`#participar-${book.id}`} class="block overflow-hidden rounded-[14px]">
-      <!-- Tapa -->
-      <div class="aspect-[3/4] overflow-hidden bg-white">
+    <a href={`#participar-${book.id}`} class="block w-full shrink-0">
+      <div class="book-cover">
         <img
           src={book.cover}
-          alt={book.title}
+          alt={`Tapa de ${book.title}`}
+          width={200}
+          height={267}
           loading="lazy"
-          class="w-full h-full object-cover"
+          decoding="async"
         />
       </div>
     </a>
 
-    <!-- Bloque inferior de color -->
-    <div class="mt-2 px-3 py-3 text-center rounded-[12px]" style={`background: ${cardBg};`}>
-      <h3 class="text-sm font-extrabold text-[color:var(--color-ink-900)] leading-snug line-clamp-2">{book.title}</h3>
-      <p class="mt-1 text-xs text-[color:var(--color-ink-700)] line-clamp-1">{book.author}</p>
-    </div>
+    <div class="book-cover-fade" aria-hidden="true"></div>
 
-    <div class="mt-3 text-center">
-      <div class="flex items-center justify-center gap-2">
-      <span class="w-8 h-8 rounded-full grid place-items-center text-white text-sm font-extrabold" style={`background:${uiStyle.badgeBg};`}>
-        {book.age}
-      </span>
-      <p class="text-[1.06rem] leading-tight font-medium" style={`color:${uiStyle.roleText};`}>
-        {book.role}
-      </p>
+    <div class="book-card-body">
+      <div class="book-card-top">
+        <h3 class="book-card-title">{book.title}</h3>
+        <p class="book-card-author">{book.author}</p>
+        <div class="book-card-top-spacer" aria-hidden="true"></div>
       </div>
 
-      <a
-        href={`#participar-${book.id}`}
-        class:list={[
-          "mt-3 inline-flex w-full justify-center items-center rounded-xl py-2.5 text-base font-bold transition",
-          uiStyle.button,
-        ]}
-      >
-        Participar
-      </a>
+      <div class="book-card-footer">
+        <div class="book-card-role">
+          <span
+            class="book-card-badge"
+            style={`background: ${accent};`}
+          >
+            {book.age}
+          </span>
+          <p class="book-card-role-label" style={`color: ${accent};`}>
+            {book.role}
+          </p>
+        </div>
+
+        <a
+          href={`#participar-${book.id}`}
+          class="book-card-cta"
+          style={`background: ${accent};`}
+        >
+          Participar
+        </a>
+      </div>
     </div>
   </div>
 </article>

@@ -63,4 +63,123 @@
     animation: astronaut-float 6s ease-in-out infinite;
     will-change: transform;
   }
+
+  .section-title {
+    @apply text-xl sm:text-2xl font-extrabold text-ink-900 tracking-tight uppercase;
+  }
+
+  .book-card-body {
+    @apply relative z-[1] flex flex-1 flex-col items-stretch bg-white text-center px-3 pb-3.5 sm:px-3.5 min-h-0;
+    margin-top: -0.25rem;
+    padding-top: 0.125rem;
+  }
+
+  /* Título/autor arriba; el espacio variable queda aquí */
+  .book-card-top {
+    @apply flex w-full min-h-0 flex-1 flex-col;
+  }
+
+  .book-card-title {
+    @apply w-full shrink-0 text-sm font-bold leading-snug text-ink-900 line-clamp-3;
+  }
+
+  .book-card-author {
+    @apply mt-1 w-full shrink-0 text-xs leading-snug text-gray-500 line-clamp-2;
+  }
+
+  .book-card-top-spacer {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+  }
+
+  /* Reto + botón siempre abajo, distancia fija entre ellos */
+  .book-card-footer {
+    @apply w-full shrink-0;
+  }
+
+  .book-card-role {
+    @apply flex w-full items-center justify-center gap-2;
+  }
+
+  .book-card-badge {
+    @apply shrink-0 w-9 h-9 rounded-full grid place-items-center text-white text-xs font-bold;
+  }
+
+  .book-card-role-label {
+    @apply text-sm font-semibold leading-snug line-clamp-2 text-left flex-1 min-w-0;
+  }
+
+  .book-card-cta {
+    @apply mt-3 block w-full shrink-0 rounded-full py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90;
+  }
+
+  /* Portada a ancho completo (proporción 200×267) */
+  .book-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 200 / 267;
+    overflow: hidden;
+    background-color: #ffffff;
+  }
+
+  .book-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Difuminado: arco suave; puntas sutiles hacia los bordes laterales */
+  .book-cover-fade {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    width: 100%;
+    height: 2.875rem;
+    margin-top: -2.875rem;
+    pointer-events: none;
+    -webkit-mask-image:
+      radial-gradient(ellipse 72% 88% at 0% 0%, transparent 0%, #000 56%),
+      radial-gradient(ellipse 72% 88% at 100% 0%, transparent 0%, #000 56%),
+      linear-gradient(to bottom, transparent 0%, #000 26%, #000 100%);
+    -webkit-mask-composite: source-in, source-in;
+    mask-image:
+      radial-gradient(ellipse 72% 88% at 0% 0%, transparent 0%, #000 56%),
+      radial-gradient(ellipse 72% 88% at 100% 0%, transparent 0%, #000 56%),
+      linear-gradient(to bottom, transparent 0%, #000 26%, #000 100%);
+    mask-composite: intersect;
+    background:
+      radial-gradient(
+        ellipse 36% 165% at 0% 100%,
+        #ffffff 0%,
+        rgb(255 255 255 / 0.48) 46%,
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 36% 165% at 100% 100%,
+        #ffffff 0%,
+        rgb(255 255 255 / 0.48) 46%,
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 20% 52% at 0% 0%,
+        rgb(255 255 255 / 0.2) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 20% 52% at 100% 0%,
+        rgb(255 255 255 / 0.2) 0%,
+        transparent 58%
+      ),
+      linear-gradient(
+        180deg,
+        rgb(255 255 255 / 0) 0%,
+        rgb(255 255 255 / 0.16) 38%,
+        rgb(255 255 255 / 0.5) 70%,
+        #ffffff 92%,
+        #ffffff 100%
+      );
+  }
 }
