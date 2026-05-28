@@ -13,35 +13,50 @@ export default function AgeFilter() {
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+    <div className="flex flex-wrap items-end justify-center gap-5 sm:gap-8">
       {ageFilters.map((f) => {
         const active = selected === f.key;
-        const underlineColor = f.key === "todo" ? "transparent" : f.ring;
+        const bookColor = f.key === "todo" ? "#9ca3af" : f.ring;
         return (
           <button
             key={f.key}
             type="button"
             onClick={() => handleSelect(f.key)}
             aria-pressed={active}
-            className="focus:outline-none flex flex-col items-center"
+            className={[
+              "focus:outline-none flex flex-col items-center min-w-14 transition-transform duration-200 ease-out",
+              active ? "scale-110 -translate-y-0.5" : "hover:scale-105",
+            ].join(" ")}
           >
+            {/* Círculo con borde grueso (~25% del diámetro) */}
             <span
               className={[
-                "grid place-items-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white transition",
-                active ? "scale-110 shadow-sm" : "hover:scale-105",
+                "block rounded-full bg-white shrink-0",
+                "w-10 h-10 sm:w-11 sm:h-11",
               ].join(" ")}
               style={{
-                border: "3px solid #111111",
+                border: "8px solid #111111",
+                boxSizing: "border-box",
               }}
             />
+
+            {/* libro.svg debajo del círculo */}
             <span
-              className="mt-1 h-2 w-8 rounded-b-full"
+              className="mt-0.5 h-3 w-10 sm:h-3.5 sm:w-11 shrink-0"
               style={{
-                borderBottom: `5px solid ${underlineColor}`,
-                borderRadius: "0 0 999px 999px",
+                backgroundColor: bookColor,
+                WebkitMaskImage: "url('/libro.svg')",
+                WebkitMaskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                WebkitMaskSize: "contain",
+                maskImage: "url('/libro.svg')",
+                maskRepeat: "no-repeat",
+                maskPosition: "center",
+                maskSize: "contain",
               }}
             />
-            <span className="mt-1 text-[1.05rem] leading-none font-semibold text-ink-800">
+
+            <span className="mt-1.5 text-base sm:text-[1.05rem] leading-none font-semibold text-ink-800">
               {f.label}
             </span>
           </button>
