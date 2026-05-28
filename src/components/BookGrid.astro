@@ -1,0 +1,19 @@
+---
+import AgeFilter from "./AgeFilter.tsx";
+import BookCard from "./BookCard.astro";
+import { books } from "../data/books";
+---
+
+<section id="libros" class="pb-12 sm:pb-16">
+  <h2 class="text-xl sm:text-2xl font-extrabold text-[color:var(--color-ink-900)] tracking-tight uppercase mb-6">
+    Explora los libros
+  </h2>
+
+  <AgeFilter client:load />
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 mt-8">
+    {books.map((book) => (
+      <BookCard book={book} />
+    ))}
+  </div>
+</section>

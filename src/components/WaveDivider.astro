@@ -1,0 +1,58 @@
+---
+/**
+ * WaveDivider
+ * --------------------------------------------------------------
+ * Separador SVG en forma de onda con efecto "pincelada de acuarela".
+ * Usa varias capas con opacidad para imitar una pincelada húmeda.
+ *
+ * Props:
+ *  - color:      Color sólido de la onda principal (CSS var u hex).
+ *  - height:     Altura en px del divisor (default 110).
+ *  - flip:       Invierte vertical (default false). Útil para "subir" al siguiente bloque.
+ *  - className:  Clases extra de Tailwind.
+ */
+interface Props {
+  color?: string;
+  height?: number;
+  flip?: boolean;
+  className?: string;
+}
+
+const {
+  color = "var(--color-aqua-200)",
+  height = 110,
+  flip = false,
+  className = "",
+} = Astro.props;
+---
+
+<div
+  class:list={["relative w-full pointer-events-none select-none", className]}
+  style={`height:${height}px; transform:${flip ? "scaleY(-1)" : "none"}`}
+  aria-hidden="true"
+>
+  <svg
+    class="absolute inset-0 w-full h-full"
+    viewBox="0 0 1440 110"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <!-- Capa difusa (acuarela húmeda) -->
+    <path
+      d="M0,72 C180,30 320,98 520,72 C720,48 880,16 1080,52 C1240,80 1340,46 1440,60 L1440,110 L0,110 Z"
+      fill={color}
+      opacity="0.35"
+    />
+    <!-- Capa media -->
+    <path
+      d="M0,80 C200,52 360,108 560,80 C760,54 900,28 1100,60 C1260,86 1340,58 1440,72 L1440,110 L0,110 Z"
+      fill={color}
+      opacity="0.65"
+    />
+    <!-- Capa sólida principal -->
+    <path
+      d="M0,92 C220,66 380,112 580,92 C780,72 920,46 1120,72 C1280,94 1360,72 1440,86 L1440,110 L0,110 Z"
+      fill={color}
+    />
+  </svg>
+</div>

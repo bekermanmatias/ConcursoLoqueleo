@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink-900: #1a1a1a;
+  --color-ink-800: #2d2d2d;
+  --color-ink-700: #444444;
+  --color-brand-red: #e63946;
+  --color-brand-red-hover: #cf2f3c;
+
+  --color-age-todo: #9ca3af;
+  --color-age-6:    #22c55e;
+  --color-age-8:    #eab308;
+  --color-age-10:   #f97316;
+  --color-age-12:   #3b82f6;
+  --color-age-14:   #ef4444;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink-800);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #f5efe4;
+    min-height: 100vh;
+  }
+
+  .page-shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .fondo-scroll,
+  .page-content {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .fondo-scroll {
+    z-index: 0;
+    pointer-events: none;
+    line-height: 0;
+  }
+
+  .fondo-scroll img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .page-content {
+    z-index: 1;
+    min-height: 100%;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.12);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-bold text-white transition;
+    background: var(--color-brand-red);
+  }
+  .btn-primary:hover {
+    background: var(--color-brand-red-hover);
+    transform: translateY(-1px);
+  }
+}

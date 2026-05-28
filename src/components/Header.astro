@@ -1,0 +1,68 @@
+---
+const nav = [
+  { label: "Inicio",            href: "#inicio",             active: true },
+  { label: "¿Cómo participar?", href: "#como-participar",    active: false },
+  { label: "Regístrate",        href: "#registrate",         active: false },
+  { label: "Premios",           href: "#premios",            active: false },
+  { label: "Ganadores",         href: "#ganadores",          active: false },
+];
+---
+
+<header class="w-full bg-white sticky top-0 z-50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.12)]">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 min-h-[5.5rem] sm:min-h-[6.25rem] flex items-center justify-between gap-6 py-4">
+
+    <a href="#inicio" class="shrink-0">
+      <img
+        src="/loqueleo.png"
+        alt="Loqueleo"
+        class="h-12 sm:h-14 lg:h-16 w-auto"
+        width="180"
+        height="64"
+      />
+    </a>
+
+    <nav class="hidden md:flex items-center gap-8 lg:gap-10">
+      {nav.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            "text-base lg:text-lg font-semibold transition",
+            item.active
+              ? "text-[color:var(--color-brand-red)]"
+              : "text-[color:var(--color-ink-800)] hover:text-[color:var(--color-brand-red)]",
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <button
+      type="button"
+      class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full text-[color:var(--color-ink-800)] hover:bg-gray-100 transition"
+      aria-label="Buscar"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 sm:w-7 sm:h-7">
+        <circle cx="11" cy="11" r="7" />
+        <path stroke-linecap="round" d="M20 20l-3-3" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Nav móvil -->
+  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100">
+    {nav.map((item) => (
+      <a
+        href={item.href}
+        class:list={[
+          "text-sm font-semibold whitespace-nowrap shrink-0 py-1",
+          item.active
+            ? "text-[color:var(--color-brand-red)]"
+            : "text-[color:var(--color-ink-800)]",
+        ]}
+      >
+        {item.label}
+      </a>
+    ))}
+  </nav>
+</header>

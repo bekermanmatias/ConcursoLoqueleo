@@ -1,0 +1,38 @@
+---
+import type { Book } from "../data/books";
+import { ageCardColors } from "../data/books";
+
+interface Props {
+  book: Book;
+}
+
+const { book } = Astro.props;
+const cardBg = ageCardColors[book.age];
+---
+
+<article data-age={book.age} class="group">
+  <a
+    href={`#participar-${book.id}`}
+    class="block overflow-hidden rounded-2xl shadow-sm bg-white transition hover:shadow-md hover:-translate-y-0.5"
+  >
+    <!-- Tapa -->
+    <div class="aspect-[3/4] overflow-hidden bg-white">
+      <img
+        src={book.cover}
+        alt={book.title}
+        loading="lazy"
+        class="w-full h-full object-cover"
+      />
+    </div>
+
+    <!-- Bloque inferior de color -->
+    <div class="px-3 py-4 text-center" style={`background: ${cardBg};`}>
+      <h3 class="text-sm font-extrabold text-[color:var(--color-ink-900)] leading-snug line-clamp-2">
+        {book.title}
+      </h3>
+      <p class="mt-1 text-xs text-[color:var(--color-ink-700)]">
+        {book.author}
+      </p>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,90 @@
+---
+/**
+ * Steps — "¿Cómo participar?"
+ * 4 pasos con íconos en contenedores orgánicos (manchas).
+ */
+const steps = [
+  {
+    n: "01",
+    title: "Lee la obra",
+    desc:  "Elige el libro de tu edad y disfruta de la lectura junto a tu familia o tu salón.",
+    tint:  "var(--color-blush-300)",
+    icon:  "book",
+  },
+  {
+    n: "02",
+    title: "Crea tu reto",
+    desc:  "Escribe, ilustra, graba o compone según el rol creativo que te tocó.",
+    tint:  "var(--color-sun-300)",
+    icon:  "spark",
+  },
+  {
+    n: "03",
+    title: "Regístrate",
+    desc:  "Sube tu trabajo en la sección de inscripción con los datos de tu colegio.",
+    tint:  "var(--color-mint-300)",
+    icon:  "user",
+  },
+  {
+    n: "04",
+    title: "¡Gana!",
+    desc:  "Participa por libros, kits, talleres con autores y reconocimientos nacionales.",
+    tint:  "var(--color-aqua-300)",
+    icon:  "trophy",
+  },
+];
+---
+
+<section id="como-participar" class="relative py-20 sm:py-28 bg-[color:var(--color-paper)]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="text-center mb-12 sm:mb-16">
+      <p class="inline-block px-3 py-1 rounded-full bg-white/80 text-xs font-semibold tracking-[0.18em] uppercase text-[color:var(--color-ink-600)] border border-white/70">
+        Pasos
+      </p>
+      <h2 class="title-display mt-4 text-3xl sm:text-5xl font-extrabold">
+        ¿Cómo <span class="text-[color:var(--color-aqua-500)]">participar?</span>
+      </h2>
+      <p class="mt-3 text-[color:var(--color-ink-700)] max-w-2xl mx-auto">
+        En cuatro pasos sencillos vives la experiencia Soy Loqueleo.
+      </p>
+    </header>
+
+    <ol class="grid gap-7 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map((s, idx) => (
+        <li class="card-paper p-6 relative">
+          <span
+            class="absolute -top-5 -left-3 w-14 h-14 grid place-items-center font-extrabold text-[color:var(--color-ink-900)] shadow-md"
+            class:list={[["blob-1","blob-2","blob-3","blob-4"][idx % 4]]}
+            style={`background: ${s.tint};`}
+          >
+            {s.n}
+          </span>
+
+          <div class="mt-6">
+            <h3 class="text-xl font-extrabold text-[color:var(--color-ink-900)]">{s.title}</h3>
+            <p class="mt-2 text-sm text-[color:var(--color-ink-700)] leading-relaxed">{s.desc}</p>
+          </div>
+
+          <!-- Iconito pintado a mano (placeholder svg) -->
+          <span
+            class="absolute bottom-4 right-4 w-12 h-12 blob-3 grid place-items-center opacity-90"
+            style={`background: color-mix(in srgb, ${s.tint} 70%, white);`}
+          >
+            {s.icon === "book" && (
+              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-2zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg>
+            )}
+            {s.icon === "spark" && (
+              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>
+            )}
+            {s.icon === "user" && (
+              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 14a4 4 0 1 0-8 0M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            )}
+            {s.icon === "trophy" && (
+              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3"/></svg>
+            )}
+          </span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
