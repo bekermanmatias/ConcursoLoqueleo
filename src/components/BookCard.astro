@@ -8,6 +8,7 @@ interface Props {
 
 const { book } = Astro.props;
 const { accent } = ageUiStyles[book.age];
+const bookUrl = `/libro/${book.id}`;
 ---
 
 <article data-age={book.age} class="h-full">
@@ -15,7 +16,7 @@ const { accent } = ageUiStyles[book.age];
     class="book-card flex h-full flex-col overflow-hidden rounded-2xl border-2 bg-white shadow-[0_2px_14px_rgba(0,0,0,0.06)] transition-shadow duration-200 hover:shadow-[0_10px_28px_rgba(0,0,0,0.1)]"
     style={`border-color: ${accent};`}
   >
-    <a href={`#participar-${book.id}`} class="block w-full shrink-0">
+    <a href={bookUrl} class="block w-full shrink-0">
       <div class="book-cover">
         <img
           src={book.cover}
@@ -45,17 +46,20 @@ const { accent } = ageUiStyles[book.age];
           >
             {book.age}
           </span>
-          <p class="book-card-role-label" style={`color: ${accent};`}>
+          <p
+            class="book-card-role-label"
+            style={`color: ${accent};`}
+          >
             {book.role}
           </p>
         </div>
 
         <a
-          href={`#participar-${book.id}`}
+          href={bookUrl}
           class="book-card-cta"
           style={`background: ${accent};`}
         >
-          Participar
+          Ver reto
         </a>
       </div>
     </div>

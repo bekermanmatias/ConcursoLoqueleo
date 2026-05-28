@@ -1,5 +1,6 @@
 ---
 import Countdown from "./Countdown.tsx";
+import HowToParticipate from "./HowToParticipate.astro";
 ---
 
 <section id="inicio" class="pt-10 sm:pt-14 pb-12 sm:pb-16">
@@ -23,7 +24,7 @@ import Countdown from "./Countdown.tsx";
         Elige tu libro, cumple el reto de tu grado y compite por increíbles premios.
       </p>
 
-      <a href="#libros" class="btn-primary mt-8 text-base">
+      <a href="#retos" class="btn-primary mt-8 text-base">
         Participa ahora
       </a>
     </div>
@@ -41,9 +42,9 @@ import Countdown from "./Countdown.tsx";
 
   <div class="relative z-20 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen -mt-72 sm:-mt-80 lg:-mt-96 bg-white pt-5 sm:pt-7 pb-48 sm:pb-56 lg:pb-64">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto">
-        <Countdown client:load />
-      </div>
+      <Countdown client:load />
+      <div class="countdown-divider" role="separator" aria-hidden="true"></div>
+      <HowToParticipate />
     </div>
   </div>
 </section>

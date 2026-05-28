@@ -22,10 +22,10 @@ function calcTimeLeft(): TimeLeft {
 }
 
 const units = [
-  { key: "days", label: "Días", color: "#e63946" },
-  { key: "hours", label: "Horas", color: "#9b7dd4" },
-  { key: "minutes", label: "Min", color: "#3b82f6" },
-  { key: "seconds", label: "Seg", color: "#22c55e" },
+  { key: "days", label: "Días", color: "var(--color-countdown-red)" },
+  { key: "hours", label: "Horas", color: "var(--color-countdown-purple)" },
+  { key: "minutes", label: "Min", color: "var(--color-countdown-blue)" },
+  { key: "seconds", label: "Seg", color: "var(--color-countdown-green)" },
 ] as const;
 
 export default function Countdown() {

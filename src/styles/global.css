@@ -9,6 +9,12 @@
   --color-brand-red: #e63946;
   --color-brand-red-hover: #cf2f3c;
 
+  /* Paleta del contador (Días → Seg) */
+  --color-countdown-red: #e63946;
+  --color-countdown-purple: #9b7dd4;
+  --color-countdown-blue: #3b82f6;
+  --color-countdown-green: #5fa84a;
+
   --color-age-todo: #111111;
   --color-age-6:    #f1d24d;
   --color-age-8:    #7f71c1;
@@ -65,7 +71,7 @@
   }
 
   .section-title {
-    @apply text-xl sm:text-2xl font-extrabold text-ink-900 tracking-tight uppercase;
+    @apply text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ink-900 tracking-tight leading-[1.1];
   }
 
   .book-card-body {
@@ -181,5 +187,232 @@
         #ffffff 92%,
         #ffffff 100%
       );
+  }
+
+  .flow-panel {
+    @apply rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)];
+  }
+
+  .flow-tag {
+    @apply inline-block rounded-full px-3 py-1 text-xs font-semibold text-ink-800;
+    background: rgba(230, 57, 70, 0.08);
+    color: var(--color-brand-red);
+  }
+
+  .flow-tag--muted {
+    @apply bg-gray-100 text-gray-600;
+    color: var(--color-ink-700);
+  }
+
+  .flow-check-item {
+    @apply flex gap-2 text-sm text-ink-800 leading-snug;
+  }
+
+  .flow-check-item::before {
+    content: "";
+    flex-shrink: 0;
+    width: 0.45rem;
+    height: 0.75rem;
+    margin-top: 0.1rem;
+    border-right: 2px solid var(--color-brand-red);
+    border-bottom: 2px solid var(--color-brand-red);
+    transform: rotate(45deg);
+  }
+
+  .countdown-divider {
+    @apply mx-auto mt-8 sm:mt-10 max-w-2xl;
+    height: 1px;
+    background-color: #e8e8e8;
+  }
+
+  /* ¿Cómo participar? — ancho completo; imagen al borde, contenido centrado */
+  .how-participate {
+    @apply relative pt-10 sm:pt-14 pb-4 overflow-x-clip;
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .how-participate-layout {
+    @apply relative w-full;
+  }
+
+  @media (min-width: 1024px) {
+    .how-participate-layout {
+      min-height: 26rem;
+    }
+  }
+
+  /* Decoración lateral: no afecta el centrado del contenido */
+  .how-participate-visual {
+    @apply shrink-0 w-fit pointer-events-none select-none;
+  }
+
+  .how-participate-visual--left {
+    @apply flex justify-center mx-auto mb-8 sm:mb-10;
+  }
+
+  .how-participate-visual--right {
+    @apply hidden;
+  }
+
+  @media (min-width: 1024px) {
+    .how-participate-visual--left {
+      @apply absolute z-0 m-0 mb-0 flex;
+      left: 2.5rem;
+      top: 40%;
+      transform: translateY(-50%);
+    }
+
+    .how-participate-visual--right {
+      @apply absolute z-0 flex;
+      top: 50%;
+      right: 1.5rem;
+      transform: translateY(-50%);
+    }
+  }
+
+  .how-participate-img {
+    @apply h-auto object-contain;
+  }
+
+  .how-participate-img--planet {
+    @apply w-full object-left;
+    max-width: 300px;
+  }
+
+  @media (min-width: 640px) {
+    .how-participate-img--planet {
+      max-width: 360px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .how-participate-img--planet {
+      max-width: 400px;
+      width: 400px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .how-participate-img--planet {
+      max-width: 480px;
+      width: 480px;
+    }
+  }
+
+  .how-participate-img--stars {
+    @apply w-auto object-contain;
+    max-width: 260px;
+  }
+
+  @media (min-width: 1024px) {
+    .how-participate-img--stars {
+      max-width: 340px;
+      width: 340px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .how-participate-visual--right {
+      top: 48%;
+      right: 2rem;
+    }
+
+    .how-participate-img--stars {
+      max-width: 420px;
+      width: 420px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .how-participate-visual--right {
+      top: 46%;
+      right: 2.5rem;
+    }
+
+    .how-participate-img--stars {
+      max-width: 480px;
+      width: 480px;
+    }
+  }
+
+  .how-participate-content {
+    @apply relative z-10 w-full flex justify-center px-4 sm:px-6;
+  }
+
+  .how-participate-inner {
+    @apply flex flex-col items-center w-full max-w-3xl lg:max-w-4xl text-center mx-auto;
+  }
+
+  .how-participate-header {
+    @apply w-full text-center;
+  }
+
+  .how-participate-header p {
+    @apply mx-auto;
+  }
+
+  .how-participate-title-how {
+    color: var(--color-countdown-purple);
+  }
+
+  .how-participate-title-participar {
+    color: var(--color-countdown-green);
+  }
+
+  .how-participate-steps > li:nth-child(1) .how-participate-num {
+    background-color: var(--color-countdown-red);
+  }
+  .how-participate-steps > li:nth-child(1) .how-participate-label {
+    color: var(--color-countdown-red);
+  }
+
+  .how-participate-steps > li:nth-child(2) .how-participate-num {
+    background-color: var(--color-countdown-purple);
+  }
+  .how-participate-steps > li:nth-child(2) .how-participate-label {
+    color: var(--color-countdown-purple);
+  }
+
+  .how-participate-steps > li:nth-child(3) .how-participate-num {
+    background-color: var(--color-countdown-blue);
+  }
+  .how-participate-steps > li:nth-child(3) .how-participate-label {
+    color: var(--color-countdown-blue);
+  }
+
+  .how-participate-steps > li:nth-child(4) .how-participate-num {
+    background-color: var(--color-countdown-green);
+  }
+  .how-participate-steps > li:nth-child(4) .how-participate-label {
+    color: var(--color-countdown-green);
+  }
+
+  .how-participate-actions {
+    @apply text-center w-full;
+  }
+
+  .how-participate-steps {
+    @apply grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 list-none p-0 m-0 w-full self-stretch;
+  }
+
+  .how-participate-card {
+    @apply flex flex-col items-center justify-between rounded-3xl bg-white px-4 pt-10 pb-6 sm:pt-12 sm:pb-8 min-h-[9.5rem] sm:min-h-[11rem];
+    box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.1);
+  }
+
+  .how-participate-num {
+    @apply flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full text-xl sm:text-2xl font-extrabold text-white shrink-0;
+    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.2);
+  }
+
+  .how-participate-label {
+    @apply mt-auto pt-6 text-center text-sm sm:text-base font-bold leading-snug;
+  }
+
+  .how-participate-cta {
+    @apply px-12;
   }
 }

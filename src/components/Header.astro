@@ -1,10 +1,14 @@
 ---
+const pathname = Astro.url.pathname;
+const isHome = pathname === "/";
+
 const nav = [
-  { label: "Inicio",            href: "/",                   active: true },
-  { label: "¿Cómo participar?", href: "#como-participar",    active: false },
-  { label: "Regístrate",        href: "#registrate",         active: false },
-  { label: "Premios",           href: "#premios",            active: false },
-  { label: "Ganadores",         href: "#ganadores",          active: false },
+  { label: "Inicio", href: "/" },
+  { label: "Retos", href: "/#retos" },
+  { label: "¿Cómo participar?", href: "/#como-participar" },
+  { label: "Regístrate", href: "/#registrate" },
+  { label: "Premios", href: "/#premios" },
+  { label: "Ganadores", href: "/#ganadores" },
 ];
 ---
 
@@ -22,21 +26,62 @@ const nav = [
     </a>
 
     <nav class="hidden md:flex items-center justify-end gap-8 lg:gap-10 ml-auto">
-      {nav.map((item) => (
+      {nav.map((item) => {
+        const active = item.href === "/" && isHome;
+        return (
+          <a
+            href={item.href}
+            class:list={[
+              "group text-base lg:text-lg font-semibold transition flex flex-col items-center leading-none",
+              active
+                ? "text-[color:var(--color-brand-red)]"
+                : "text-[color:var(--color-ink-800)] hover:text-[color:var(--color-brand-red)]",
+            ]}
+          >
+            {item.label}
+            <span
+              class:list={[
+                "mt-1 h-3 w-9 transition-opacity duration-150",
+                active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              ]}
+              style="
+                background-color: var(--color-brand-red);
+                -webkit-mask-image: url('/libro.svg');
+                -webkit-mask-repeat: no-repeat;
+                -webkit-mask-position: center;
+                -webkit-mask-size: contain;
+                mask-image: url('/libro.svg');
+                mask-repeat: no-repeat;
+                mask-position: center;
+                mask-size: contain;
+              "
+              aria-hidden="true"
+            />
+          </a>
+        );
+      })}
+    </nav>
+
+  </div>
+
+  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100">
+    {nav.map((item) => {
+      const active = item.href === "/" && isHome;
+      return (
         <a
           href={item.href}
           class:list={[
-            "group text-base lg:text-lg font-semibold transition flex flex-col items-center leading-none",
-            item.active
+            "group text-sm font-semibold whitespace-nowrap shrink-0 py-1 flex flex-col items-center leading-none",
+            active
               ? "text-[color:var(--color-brand-red)]"
-              : "text-[color:var(--color-ink-800)] hover:text-[color:var(--color-brand-red)]",
+              : "text-[color:var(--color-ink-800)]",
           ]}
         >
           {item.label}
           <span
             class:list={[
-              "mt-1 h-3 w-9 transition-opacity duration-150",
-              item.active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              "mt-1 h-2.5 w-8 transition-opacity duration-150",
+              active ? "opacity-100" : "opacity-0",
             ]}
             style="
               background-color: var(--color-brand-red);
@@ -52,43 +97,7 @@ const nav = [
             aria-hidden="true"
           />
         </a>
-      ))}
-    </nav>
-
-  </div>
-
-  <!-- Nav móvil -->
-  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100">
-    {nav.map((item) => (
-      <a
-        href={item.href}
-        class:list={[
-          "group text-sm font-semibold whitespace-nowrap shrink-0 py-1 flex flex-col items-center leading-none",
-          item.active
-            ? "text-[color:var(--color-brand-red)]"
-            : "text-[color:var(--color-ink-800)]",
-        ]}
-      >
-        {item.label}
-        <span
-          class:list={[
-            "mt-1 h-2.5 w-8 transition-opacity duration-150",
-            item.active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-          ]}
-          style="
-            background-color: var(--color-brand-red);
-            -webkit-mask-image: url('/libro.svg');
-            -webkit-mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            -webkit-mask-size: contain;
-            mask-image: url('/libro.svg');
-            mask-repeat: no-repeat;
-            mask-position: center;
-            mask-size: contain;
-          "
-          aria-hidden="true"
-        />
-      </a>
-    ))}
+      );
+    })}
   </nav>
 </header>

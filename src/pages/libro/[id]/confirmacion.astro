@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ConfirmationView from "../../../components/flow/ConfirmationView.tsx";
+import { getAllBookIds } from "../../../lib/books";
+
+export function getStaticPaths() {
+  return getAllBookIds().map((id) => ({ params: { id } }));
+}
+---
+
+<BaseLayout
+  title="Participación enviada — Soy Loqueleo 2026"
+  description="Confirmación de tu inscripción al concurso."
+>
+  <div class="py-6 sm:py-12">
+    <ConfirmationView client:load />
+  </div>
+</BaseLayout>

@@ -1,0 +1,80 @@
+---
+const steps = [
+  { n: 1, label: "Regístrate" },
+  { n: 2, label: "Crea tu proyecto" },
+  { n: 3, label: "Sube tu trabajo" },
+  { n: 4, label: "Participa y gana" },
+];
+---
+
+<section
+  id="como-participar"
+  class="how-participate relative pt-10 sm:pt-14"
+  aria-labelledby="how-participate-title"
+>
+  <div class="how-participate-layout">
+    <div class="how-participate-visual how-participate-visual--left">
+      <img
+        src="/astronauta y saturno.png"
+        alt=""
+        width={480}
+        height={600}
+        class="how-participate-img how-participate-img--planet"
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
+    </div>
+
+    <div class="how-participate-visual how-participate-visual--right">
+      <img
+        src="/estrellas a derecha.png"
+        alt=""
+        width={480}
+        height={480}
+        class="how-participate-img how-participate-img--stars"
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
+    </div>
+
+    <div class="how-participate-content">
+      <div class="how-participate-inner">
+        <header class="how-participate-header">
+          <h2
+            id="how-participate-title"
+            class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight"
+          >
+            <span class="how-participate-title-how">¿Cómo</span>
+            <br />
+            <span class="how-participate-title-participar">participar?</span>
+          </h2>
+          <p class="mt-4 text-sm sm:text-base text-[color:var(--color-ink-700)] max-w-md leading-relaxed">
+            Cuatro pasos. Eliges un libro, cumples el reto de tu edad y envías tu trabajo desde el colegio o tu casa.
+          </p>
+        </header>
+
+        <ol class="how-participate-steps mt-10 sm:mt-12">
+          {steps.map((step) => (
+            <li class="how-participate-card">
+              <span class="how-participate-num">{step.n}</span>
+              <p class="how-participate-label">{step.label}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div class="how-participate-actions mt-10 sm:mt-12">
+          <a href="#retos" class="how-participate-cta btn-primary">
+            Participa ahora
+          </a>
+          <p class="mt-4 text-xs text-gray-400">
+            <a href="#registrate" class="hover:text-gray-600 transition underline-offset-2 hover:underline">
+              Términos y condiciones
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
