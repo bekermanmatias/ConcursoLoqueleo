@@ -24,11 +24,17 @@ export interface Book {
   age: Exclude<AgeKey, "todo">;
   /** Párrafo breve que introduce el reto (opcional) */
   challengeIntro?: string;
+  /** Línea destacada bajo el rol (layout simple del reto) */
+  challengeHeadline?: string;
   challenge: string;
+  /** Texto del bloque «Entregable» (layout simple) */
+  deliverable?: string;
   formats: string[];
   requirements: string[];
   /** Texto humano sobre el registro (sustituye lista de datos genérica) */
   participateNote: string;
+  /** PDF de bases/indicaciones completas (descarga directa desde /public) */
+  basesPdf?: string;
 }
 
 export const ageUiStyles: Record<Exclude<AgeKey, "todo">, { accent: string }> = {
@@ -47,20 +53,22 @@ export const books: Book[] = [
     cover: "/libro/1.png",
     role: "Soy un(a) compositor(a).",
     age: "+6",
-    challengeIntro:
-      "Después de leer la historia de Tusuj, imagina que tú también tienes un animal con algo que lo hace único.",
+    challengeHeadline: "Escribe una rima basada en el cuento y la ilustra.",
     challenge:
-      "Arma una canción, un cuento hablado o un video corto (hasta 3 minutos) presentando a tu propio cuy. Cuéntanos cómo se llama, qué le gusta y por qué es especial.",
-    formats: ["Video hasta 3 min", "PDF con dibujos o fotos"],
+      "Escribe una rima basada en «Tusuj, un cuy especial», con cuatro versos, e ilústrala.",
+    deliverable:
+      "Archivo PDF. Hoja formato A4. Orientación horizontal. Extensión de cuatro (4) versos, con ilustración hecha a mano.",
+    formats: ["PDF"],
     requirements: [
       "Solo una participación por estudiante",
-      "Puedes grabar con el celular del salón o en casa",
-      "Si envías video, que se escuche bien tu voz",
-      "Al inicio o al final, di tu nombre, grado y colegio",
+      "El PDF debe ser legible y en orientación horizontal (A4)",
+      "Cuatro versos con ilustración hecha a mano",
+      "Incluye tu nombre, grado y colegio en el archivo o en el formulario de envío",
       "Tu colegio debe estar inscrito en Loqueleo",
     ],
     participateNote:
       "Al participar te pediremos ubicación, colegio, grado, DNI y el archivo de tu trabajo. El formulario toma unos minutos si ya tienes todo a la mano.",
+    basesPdf: "/pdf/Bases LQL2026 Tusuj.pdf",
   },
   {
     id: "lonchera-6",

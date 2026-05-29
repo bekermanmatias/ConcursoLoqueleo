@@ -1,61 +1,92 @@
 ---
-import WaveDivider from "./WaveDivider.astro";
+import {
+  prizeCategories,
+  prizeWinSummaries,
+  prizesOverview,
+  type PrizeAudience,
+  type PrizeBlock,
+  type PrizeCategory,
+} from "../data/prizes";
 
-const prizes = [
-  {
-    icon: "🏆",
-    title: "1.er puesto",
-    desc:  "Kit Loqueleo + taller con autor + reconocimiento nacional.",
-    tint:  "var(--color-sun-300)",
-  },
-  {
-    icon: "🎒",
-    title: "2.do puesto",
-    desc:  "Biblioteca personal Loqueleo + materiales creativos.",
-    tint:  "var(--color-aqua-300)",
-  },
-  {
-    icon: "🎁",
-    title: "3.er puesto",
-    desc:  "Pack de libros y diploma especial del concurso.",
-    tint:  "var(--color-blush-300)",
-  },
-];
+const summaryOrder: PrizeAudience[] = ["estudiantes", "docentes", "colegios"];
+
+const primaria = prizeCategories.find((c) => c.id === "primaria")!;
+const secundaria = prizeCategories.find((c) => c.id === "secundaria")!;
+
+function blockFor(category: PrizeCategory, audience: PrizeAudience): PrizeBlock {
+  return category.blocks.find((b) => b.audience === audience)!;
+}
 ---
 
-<section id="premios" class="relative">
-  <!-- Onda superior conectando con la sección previa -->
-  <WaveDivider color="var(--color-aqua-100)" height={110} flip={true} />
+<section class="prizes-section" aria-labelledby="premios-title">
+  <header id="premios" class="prizes-header">
+    <h2 id="premios-title" class="section-title">Premios</h2>
+    <p class="prizes-subtitle">{prizesOverview.intro}</p>
+  </header>
 
-  <div class="bg-[color:var(--color-aqua-100)]/70 backdrop-blur-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
-      <header class="text-center mb-12">
-        <p class="inline-block px-3 py-1 rounded-full bg-white/80 text-xs font-semibold tracking-[0.18em] uppercase text-[color:var(--color-ink-600)] border border-white/70">
-          Premios
-        </p>
-        <h2 class="title-display mt-4 text-3xl sm:text-5xl font-extrabold">
-          Cumple el reto · <span class="text-[color:var(--color-aqua-600)]">¡y gana!</span>
-        </h2>
-      </header>
-
-      <div class="grid gap-7 sm:grid-cols-3">
-        {prizes.map((p, idx) => (
-          <article class="card-paper p-7 text-center relative">
-            <div
-              class="mx-auto w-20 h-20 grid place-items-center text-3xl shadow-md"
-              class:list={[["blob-1","blob-2","blob-3"][idx % 3]]}
-              style={`background: ${p.tint};`}
-            >
-              {p.icon}
-            </div>
-            <h3 class="mt-5 text-xl font-extrabold text-[color:var(--color-ink-900)]">{p.title}</h3>
-            <p class="mt-2 text-sm text-[color:var(--color-ink-700)]">{p.desc}</p>
-          </article>
-        ))}
-      </div>
-    </div>
+  <div class="prizes-how-grid" aria-label="¿Quién puede ganar y cómo?">
+    {summaryOrder.map((audience) => (
+      <article class={`prizes-how-card prizes-how-card--${audience}`}>
+        <h3 class="prizes-how-card-title">{prizeWinSummaries[audience].title}</h3>
+        <p class="prizes-how-card-text">{prizeWinSummaries[audience].text}</p>
+      </article>
+    ))}
   </div>
 
-  <!-- Onda inferior -->
-  <WaveDivider color="var(--color-aqua-100)" height={110} />
+  <div class="prizes-matrix">
+    <div class="prizes-matrix-row prizes-matrix-row--headers">
+      <header class={`prizes-column-intro prizes-column-intro--${primaria.id}`}>
+        <h3 class="prizes-column-title">{primaria.label}</h3>
+        <p class="prizes-column-grades">{primaria.grades}</p>
+      </header>
+      <header class={`prizes-column-intro prizes-column-intro--${secundaria.id}`}>
+        <h3 class="prizes-column-title">{secundaria.label}</h3>
+        <p class="prizes-column-grades">{secundaria.grades}</p>
+      </header>
+    </div>
+
+    {summaryOrder.map((audience) => (
+      <div class="prizes-matrix-row">
+        {[primaria, secundaria].map((category) => {
+          const block = blockFor(category, audience);
+          return (
+            <article class={`prizes-block prizes-block--${block.audience}`}>
+              <div class="prizes-block-photo prizes-photo-slot" data-photo-id={block.id}>
+                {block.photo ? (
+                  <img
+                    src={block.photo}
+                    alt={`Premio para ${block.title.toLowerCase()} — ${category.label}`}
+                    class="prizes-photo-img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span class="prizes-photo-placeholder" aria-hidden="true" />
+                )}
+              </div>
+
+              <div class="prizes-block-copy">
+                <h4 class="prizes-block-title">{block.title}</h4>
+                <p class="prizes-block-place">1.er puesto · {category.grades}</p>
+
+                <div class="prizes-block-how">
+                  <p class="prizes-block-how-label">¿Cómo se gana?</p>
+                  <p class="prizes-block-how-text">{block.howToWin}</p>
+                </div>
+
+                <p class="prizes-block-prizes-label">Qué se entrega</p>
+                <ul class="prizes-block-list">
+                  {block.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+
+  <p class="prizes-footer-note">{prizesOverview.juryNote}</p>
 </section>

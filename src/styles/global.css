@@ -21,6 +21,9 @@
   --color-age-10:   #e3ab50;
   --color-age-12:   #69bdf4;
   --color-age-14:   #df485a;
+
+  --site-header-height: 5.5rem;
+  --scroll-anchor-offset: calc(var(--site-header-height) + 1.5rem);
 }
 
 @layer base {
@@ -28,6 +31,26 @@
     font-family: var(--font-sans);
     color: var(--color-ink-800);
     scroll-behavior: smooth;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --site-header-height: 6.25rem;
+      --scroll-anchor-offset: calc(var(--site-header-height) + 1.25rem);
+    }
+  }
+
+  @media (max-width: 767px) {
+    :root {
+      --scroll-anchor-offset: calc(var(--site-header-height) + 3.75rem);
+    }
+  }
+
+  #inicio,
+  #como-participar,
+  #retos,
+  #premios {
+    scroll-margin-top: var(--scroll-anchor-offset);
   }
 
   body {
@@ -72,6 +95,184 @@
 
   .section-title {
     @apply text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ink-900 tracking-tight leading-[1.1];
+  }
+
+  .nav-link--active {
+    color: var(--color-brand-red);
+  }
+
+  .nav-link--active .nav-link-indicator {
+    opacity: 1;
+  }
+
+  /* Premios — paleta del contador / ¿Cómo participar? */
+  .prizes-section {
+    @apply relative z-30 border-t border-gray-100 pt-14 pb-16 sm:pt-20 sm:pb-20;
+  }
+
+  .prizes-header {
+    @apply mb-10 max-w-2xl sm:mb-12;
+  }
+
+  .prizes-subtitle {
+    @apply mt-3 text-base leading-relaxed text-ink-700;
+  }
+
+  .prizes-footer-note {
+    @apply mt-10 max-w-2xl text-sm leading-relaxed text-ink-700 sm:mt-12 sm:text-base;
+  }
+
+  .prizes-how-grid {
+    @apply mb-12 grid gap-4 sm:grid-cols-3 sm:items-stretch sm:gap-5;
+  }
+
+  .prizes-how-card {
+    @apply flex h-full flex-col py-1;
+  }
+
+  .prizes-how-card--estudiantes .prizes-how-card-title {
+    color: var(--color-countdown-red);
+  }
+
+  .prizes-how-card--docentes .prizes-how-card-title {
+    color: var(--color-countdown-purple);
+  }
+
+  .prizes-how-card--colegios .prizes-how-card-title {
+    color: var(--color-countdown-blue);
+  }
+
+  .prizes-how-card-title {
+    @apply text-base font-extrabold sm:text-lg;
+  }
+
+  .prizes-how-card-text {
+    @apply mt-2 text-sm leading-relaxed text-ink-700;
+  }
+
+  .prizes-matrix {
+    @apply flex flex-col gap-10 lg:gap-12;
+  }
+
+  .prizes-matrix-row {
+    @apply grid grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-0;
+  }
+
+  .prizes-matrix-row--headers {
+    @apply gap-6 lg:gap-x-12;
+  }
+
+  .prizes-column-intro--primaria {
+    border-color: var(--color-countdown-red);
+  }
+
+  .prizes-column-intro--primaria .prizes-column-title {
+    color: var(--color-countdown-red);
+  }
+
+  .prizes-column-intro--secundaria {
+    border-color: var(--color-countdown-green);
+  }
+
+  .prizes-column-intro--secundaria .prizes-column-title {
+    color: var(--color-countdown-green);
+  }
+
+  .prizes-column-intro {
+    @apply border-l-4 pl-4;
+  }
+
+  .prizes-column-title {
+    @apply text-2xl font-extrabold sm:text-3xl;
+  }
+
+  .prizes-column-grades {
+    @apply mt-0.5 text-sm font-semibold text-ink-700;
+  }
+
+  .prizes-block--estudiantes {
+    --prizes-accent: var(--color-countdown-red);
+  }
+
+  .prizes-block--docentes {
+    --prizes-accent: var(--color-countdown-purple);
+  }
+
+  .prizes-block--colegios {
+    --prizes-accent: var(--color-countdown-blue);
+  }
+
+  .prizes-photo-slot {
+    @apply relative block w-full shrink-0 overflow-hidden rounded-2xl;
+    background: color-mix(in srgb, var(--prizes-accent, var(--color-countdown-red)) 12%, #f5f5f5);
+  }
+
+  .prizes-block-photo.prizes-photo-slot {
+    @apply aspect-[4/3] w-full sm:h-[8.625rem] sm:w-[11.5rem];
+  }
+
+  .prizes-photo-placeholder {
+    @apply block h-full min-h-[7rem] w-full sm:min-h-0;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--prizes-accent, #ccc) 18%, #f0f0f0) 0%,
+      #f8f8f8 50%,
+      color-mix(in srgb, var(--prizes-accent, #ccc) 10%, #f0f0f0) 100%
+    );
+  }
+
+  .prizes-photo-img {
+    @apply h-full w-full object-cover;
+  }
+
+  .prizes-block {
+    @apply flex h-full flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6;
+  }
+
+  .prizes-block-copy {
+    @apply flex min-w-0 flex-1 flex-col;
+  }
+
+  .prizes-block-title {
+    @apply text-lg font-extrabold;
+    color: var(--prizes-accent);
+  }
+
+  .prizes-block-place {
+    @apply mt-0.5 text-sm font-bold;
+    color: var(--prizes-accent);
+  }
+
+  .prizes-block-how {
+    @apply mt-4;
+  }
+
+  .prizes-block-how-label {
+    @apply text-xs font-bold uppercase tracking-wide;
+    color: var(--prizes-accent);
+  }
+
+  .prizes-block-how-text {
+    @apply mt-1.5 text-sm leading-relaxed text-ink-800;
+  }
+
+  .prizes-block-prizes-label {
+    @apply mt-4 text-xs font-bold uppercase tracking-wide;
+    color: var(--prizes-accent);
+  }
+
+  .prizes-block-list {
+    @apply mt-3 list-none space-y-2 text-sm leading-relaxed text-ink-800 sm:text-base;
+  }
+
+  .prizes-block-list li {
+    @apply relative pl-4;
+  }
+
+  .prizes-block-list li::before {
+    content: "—";
+    @apply absolute left-0 font-bold;
+    color: var(--prizes-accent);
   }
 
   .book-card-body {
@@ -191,6 +392,397 @@
 
   .flow-panel {
     @apply rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)];
+  }
+
+  /* Reto simple (ej. Tusuj) */
+  .challenge-simple {
+    @apply space-y-3.5;
+  }
+
+  .challenge-simple-role-row {
+    @apply gap-2 sm:gap-3;
+  }
+
+  .challenge-simple-role {
+    @apply text-base sm:text-lg font-extrabold leading-snug;
+  }
+
+  .challenge-simple-headline {
+    @apply text-base sm:text-lg font-bold text-ink-900 leading-snug pb-1 border-b-2;
+    border-color: var(--challenge-accent, var(--color-brand-red));
+  }
+
+  .challenge-simple-text {
+    @apply text-sm sm:text-base text-ink-800 leading-relaxed;
+  }
+
+  .challenge-simple-deliverable {
+    @apply pt-1;
+  }
+
+  .challenge-simple-deliverable-title {
+    @apply text-base sm:text-lg font-extrabold text-ink-900;
+  }
+
+  .challenge-simple-deliverable-text {
+    @apply mt-2 text-sm sm:text-base text-ink-800 leading-relaxed;
+  }
+
+  .challenge-instructions {
+    @apply pt-2;
+  }
+
+  .challenge-instructions-btn {
+    @apply inline-flex cursor-pointer list-none items-center justify-center rounded-full border-2 px-6 py-2.5 text-sm font-bold no-underline transition;
+    border-color: var(--challenge-accent, var(--color-brand-red));
+    color: var(--challenge-accent, var(--color-brand-red));
+  }
+
+  .book-detail-actions {
+    @apply flex w-full max-w-[19rem] flex-col;
+  }
+
+  .book-detail-actions .challenge-instructions {
+    @apply w-full pt-0;
+  }
+
+  .book-detail-actions .challenge-instructions-btn,
+  .book-detail-actions .book-detail-btn {
+    @apply box-border w-full justify-center text-base font-bold py-3.5 px-6;
+  }
+
+  .challenge-instructions-btn:hover {
+    background: color-mix(in srgb, var(--challenge-accent, var(--color-brand-red)) 10%, white);
+  }
+
+  .book-detail-heading {
+    @apply text-base font-bold text-ink-900;
+  }
+
+  .book-detail-page {
+    @apply relative bg-white;
+    width: 100vw;
+    max-width: 100vw;
+    min-height: calc(100dvh - var(--site-header-height));
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    overflow: visible;
+  }
+
+  .book-detail-inner {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .book-detail-moon,
+  .book-detail-stars-left {
+    @apply absolute z-[1] h-auto pointer-events-none select-none;
+    width: min(34vw, 340px);
+    max-width: 340px;
+    object-fit: contain;
+  }
+
+  .book-detail-stars-left {
+    left: 0;
+    bottom: 2.75rem;
+    object-position: left bottom;
+  }
+
+  .book-detail-moon {
+    right: 0;
+    bottom: 0.75rem;
+    object-position: right bottom;
+  }
+
+  @media (max-width: 1023px) {
+    .book-detail-moon,
+    .book-detail-stars-left {
+      @apply hidden;
+    }
+  }
+
+  .book-detail-note {
+    @apply max-w-lg pt-5 border-t border-gray-200;
+  }
+
+  .challenge-list-item {
+    @apply text-sm text-ink-800 leading-relaxed pl-4 relative;
+  }
+
+  .challenge-list-item::before {
+    content: "·";
+    @apply absolute left-0 font-bold;
+    color: var(--challenge-accent, var(--color-brand-red));
+  }
+
+  /* Wizard de participación */
+  .wizard-progress {
+    @apply mb-8;
+  }
+
+  .wizard-progress-rail {
+    @apply relative w-full pt-10 pr-8 sm:pr-10;
+  }
+
+  .wizard-progress-track {
+    @apply relative h-3.5 w-full overflow-visible rounded-full bg-gray-200 pr-[5.5rem] sm:pr-[6rem];
+  }
+
+  .wizard-progress-planet--end {
+    @apply absolute right-0 top-1/2 z-20 h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] -translate-y-1/2 translate-x-[55%] object-contain drop-shadow-md pointer-events-none select-none;
+  }
+
+  .wizard-progress-fill {
+    @apply relative h-full min-w-[4.5rem] rounded-full transition-[width] duration-500 ease-out;
+    background: linear-gradient(90deg, #f1d24d 0%, #ffd54f 100%);
+  }
+
+  .wizard-progress-marker {
+    @apply absolute right-0 top-1/2 z-10 flex -translate-y-1/2 translate-x-1/2 items-center justify-center;
+  }
+
+  .wizard-progress-rocket-img {
+    @apply block h-20 w-20 sm:h-24 sm:w-24 object-contain drop-shadow-md pointer-events-none select-none;
+  }
+
+  .wizard-journey-head {
+    @apply mb-8 min-h-[8.5rem] text-left sm:min-h-[9rem];
+  }
+
+  .wizard-journey-title {
+    @apply text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink-900 leading-tight;
+  }
+
+  .wizard-journey-accent {
+    color: var(--field-accent, var(--color-brand-red));
+  }
+
+  .wizard-journey-desc {
+    @apply mt-3 text-sm sm:text-base text-gray-600 leading-relaxed;
+  }
+
+  .participar-form {
+    @apply mx-auto w-full max-w-2xl;
+  }
+
+  .participar-form .wizard-panel {
+    @apply mx-auto w-full max-w-md;
+  }
+
+  .wizard-main {
+    @apply flex min-h-[34rem] flex-col;
+  }
+
+  .wizard-panel {
+    @apply mt-0 flex min-h-[24rem] flex-1 flex-col;
+  }
+
+  .wizard-step-slot {
+    @apply min-h-[16rem] flex-1;
+  }
+
+  .wizard-step-error {
+    @apply min-h-[3.5rem] shrink-0 pt-2;
+  }
+
+  .wizard-step {
+    @apply space-y-4;
+  }
+
+  .wizard-step-title {
+    @apply text-lg sm:text-xl font-extrabold text-ink-900;
+  }
+
+  .wizard-step-lead {
+    @apply text-sm text-ink-800 -mt-1;
+  }
+
+  .wizard-label {
+    @apply block;
+  }
+
+  .wizard-label-text {
+    @apply mb-1.5 block text-sm font-semibold text-ink-900;
+  }
+
+  .form-field {
+    @apply w-full rounded-full border-2 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 outline-none transition;
+  }
+
+  .form-field:focus {
+    border-color: var(--field-accent, var(--color-brand-red));
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 20%, transparent);
+  }
+
+  .form-field:disabled {
+    @apply cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400;
+  }
+
+  .form-select-wrap {
+    @apply relative w-full;
+  }
+
+  .form-select-trigger {
+    @apply flex cursor-pointer items-center justify-between gap-3 text-left;
+  }
+
+  .form-select-trigger-text {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  .form-select-trigger--placeholder .form-select-trigger-text {
+    @apply text-gray-400;
+  }
+
+  .form-select-trigger--open {
+    border-color: var(--field-accent, var(--color-brand-red));
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 20%, transparent);
+  }
+
+  .form-select-chevron {
+    @apply h-4 w-4 shrink-0 text-gray-600 transition-transform duration-200;
+  }
+
+  .form-select-trigger--open .form-select-chevron {
+    transform: rotate(180deg);
+    color: var(--field-accent, var(--color-brand-red));
+  }
+
+  .form-select-dropdown {
+    @apply absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border-2 bg-white shadow-lg;
+    border-color: var(--field-accent, var(--color-brand-red));
+  }
+
+  .form-select-search {
+    @apply w-full border-0 border-b-2 border-gray-100 bg-white px-4 py-3 text-sm font-medium text-ink-800 outline-none;
+  }
+
+  .form-select-search:focus {
+    border-color: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 35%, white);
+    box-shadow: inset 0 -2px 0 var(--field-accent, var(--color-brand-red));
+  }
+
+  .form-select-search::placeholder {
+    @apply text-gray-400;
+  }
+
+  .form-select-menu {
+    @apply max-h-44 list-none overflow-y-auto p-1.5 pr-1;
+  }
+
+  .form-select-empty {
+    @apply px-4 py-3 text-sm text-gray-500;
+  }
+
+  .form-select-option {
+    @apply w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-ink-800 transition;
+  }
+
+  .form-select-option:hover {
+    background: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 10%, white);
+  }
+
+  .form-select-option--active {
+    @apply font-semibold;
+    color: var(--field-accent, var(--color-brand-red));
+    background: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 14%, white);
+  }
+
+  .form-select-trigger:disabled .form-select-chevron {
+    @apply text-gray-400;
+  }
+
+  .form-select-menu {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 70%, white)
+      transparent;
+  }
+
+  .form-select-menu::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  .form-select-menu::-webkit-scrollbar-track {
+    @apply my-2 rounded-full bg-transparent;
+  }
+
+  .form-select-menu::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    border: 2px solid white;
+    background: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 55%, white);
+  }
+
+  .form-select-menu::-webkit-scrollbar-thumb:hover {
+    background: var(--field-accent, var(--color-brand-red));
+  }
+
+  .form-select-menu::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
+  .wizard-hint {
+    @apply text-sm rounded-xl px-4 py-2.5;
+  }
+
+  .wizard-hint--warn {
+    @apply text-amber-800 bg-amber-50;
+  }
+
+  .wizard-hint--error {
+    @apply text-red-700 bg-red-50;
+  }
+
+  .wizard-hint--ok {
+    @apply text-green-700;
+  }
+
+  .wizard-actions {
+    @apply mt-auto grid w-full shrink-0 grid-cols-2 gap-3 pt-4;
+  }
+
+  .wizard-btn {
+    @apply inline-flex h-[3.375rem] w-full items-center justify-center rounded-full px-3 text-center text-sm font-bold leading-tight transition;
+  }
+
+  .wizard-btn--outline {
+    @apply border-2 bg-white hover:bg-gray-50;
+  }
+
+  .wizard-btn--primary {
+    @apply text-white;
+  }
+
+  .wizard-dropzone {
+    @apply border-gray-200 bg-white hover:border-gray-300;
+  }
+
+  .wizard-dropzone--drag {
+    border-color: var(--field-accent, var(--color-brand-red));
+    background: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 8%, white);
+  }
+
+  .wizard-dropzone--error {
+    @apply border-red-400;
+  }
+
+  .wizard-dropzone-title {
+    @apply text-sm font-semibold text-ink-900;
+  }
+
+  .wizard-dropzone-or {
+    @apply mt-3 text-sm text-gray-500;
+  }
+
+  .wizard-dropzone-cta {
+    @apply mt-3 text-sm font-semibold;
+    color: var(--field-accent, var(--color-brand-red));
+  }
+
+  .wizard-dropzone-file {
+    @apply mt-5 text-sm font-semibold text-green-700;
   }
 
   .flow-tag {

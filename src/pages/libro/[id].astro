@@ -22,9 +22,10 @@ const participarUrl = `/libro/${book.id}/participar`;
   title={`${book.title} — Soy Loqueleo 2026`}
   description={book.challenge}
 >
-  <div class="py-6 sm:py-10">
-    <div class="grid lg:grid-cols-[minmax(200px,280px)_1fr] gap-8 lg:gap-12 items-start">
-      <div class="mx-auto lg:mx-0 w-full max-w-[280px]">
+  <div class="book-detail-page py-4 sm:py-6 pb-12 sm:pb-16 lg:pb-20">
+    <div class="book-detail-inner relative z-10">
+      <div class="grid lg:grid-cols-[minmax(240px,340px)_1fr] gap-6 lg:gap-8 items-start">
+      <div class="mx-auto lg:mx-0 w-full max-w-[340px]">
         <div
           class="rounded-2xl border-2 overflow-hidden shadow-lg bg-white"
           style={`border-color: ${accent};`}
@@ -32,81 +33,136 @@ const participarUrl = `/libro/${book.id}/participar`;
           <img
             src={book.cover}
             alt={`Tapa de ${book.title}`}
-            width={280}
-            height={374}
+            width={340}
+            height={454}
             class="w-full h-auto block"
           />
         </div>
       </div>
 
       <div class="min-w-0">
-        <div class="book-card-role justify-start">
-          <span
-            class="book-card-badge"
-            style={`background: ${accent};`}
-          >
-            {book.age}
-          </span>
-          <p
-            class="book-card-role-label text-base sm:text-lg"
-            style={`color: ${accent};`}
-          >
-            {book.role}
-          </p>
-        </div>
+        {!book.deliverable && (
+          <div class="book-card-role justify-start">
+            <span
+              class="book-card-badge"
+              style={`background: ${accent};`}
+            >
+              {book.age}
+            </span>
+            <p
+              class="book-card-role-label text-base sm:text-lg"
+              style={`color: ${accent};`}
+            >
+              {book.role}
+            </p>
+          </div>
+        )}
         <h1 class="mt-1 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink-900 leading-tight">
           {book.title}
         </h1>
         <p class="mt-2 text-gray-500">{book.author}</p>
 
-        <section class="flow-panel mt-8">
-          <h2 class="text-lg font-bold text-ink-900">Tu reto con este libro</h2>
-          {book.challengeIntro && (
-            <p class="mt-3 text-sm text-gray-600 leading-relaxed">
-              {book.challengeIntro}
-            </p>
-          )}
-          <p class="mt-3 text-ink-800 leading-relaxed">
-            {book.challenge}
-          </p>
-          {book.formats.length > 0 && (
-            <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              Puedes enviarlo como
-            </p>
-          )}
-          <div class="mt-2 flex flex-wrap gap-2">
-            {book.formats.map((f) => (
-              <span class="flow-tag">{f}</span>
-            ))}
+        {book.deliverable ? (
+          <section class="challenge-simple mt-3" style={`--challenge-accent: ${accent};`}>
+            <div class="challenge-simple-role-row book-card-role justify-start">
+              <span
+                class="book-card-badge"
+                style={`background: ${accent};`}
+              >
+                {book.age}
+              </span>
+              <p
+                class="book-card-role-label challenge-simple-role text-base sm:text-lg"
+                style={`color: ${accent};`}
+              >
+                {book.role}
+              </p>
+            </div>
+            {book.challengeHeadline && (
+              <p class="challenge-simple-headline">{book.challengeHeadline}</p>
+            )}
+            <p class="challenge-simple-text">{book.challenge}</p>
+
+            <div class="challenge-simple-deliverable">
+              <h2 class="challenge-simple-deliverable-title">Entregable</h2>
+              <p class="challenge-simple-deliverable-text">{book.deliverable}</p>
+            </div>
+          </section>
+        ) : (
+          <>
+            <section class="book-detail-section mt-6">
+              <h2 class="book-detail-heading">Tu reto con este libro</h2>
+              {book.challengeIntro && (
+                <p class="mt-3 text-sm text-gray-600 leading-relaxed">
+                  {book.challengeIntro}
+                </p>
+              )}
+              <p class="mt-3 text-ink-800 leading-relaxed">
+                {book.challenge}
+              </p>
+              {book.formats.length > 0 && (
+                <p class="mt-4 text-sm text-ink-800">
+                  <span class="font-semibold">Puedes enviarlo como:</span>{" "}
+                  {book.formats.join(" · ")}
+                </p>
+              )}
+            </section>
+
+            <section class="book-detail-section mt-6 pt-6 border-t border-gray-200">
+              <h2 class="book-detail-heading">Antes de enviar</h2>
+              <ul class="mt-4 space-y-2">
+                {book.requirements.map((req) => (
+                  <li class="challenge-list-item">{req}</li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
+
+        {book.basesPdf && (
+          <div class="book-detail-actions mt-6">
+            <a
+              href={book.basesPdf}
+              download={`Bases LQL2026 ${book.title.split(",")[0]}.pdf`}
+              class="challenge-instructions-btn"
+            >
+              Ver indicaciones completas
+            </a>
           </div>
-        </section>
+        )}
 
-        <section class="flow-panel mt-5">
-          <h2 class="text-lg font-bold text-ink-900">Antes de enviar</h2>
-          <p class="mt-2 text-sm text-gray-600 leading-relaxed">
-            Revisa esto con tu docente o en casa para no tener que repetir el trabajo.
-          </p>
-          <ul class="mt-4 space-y-2.5">
-            {book.requirements.map((req) => (
-              <li class="flow-check-item">{req}</li>
-            ))}
-          </ul>
-        </section>
+        <p class="book-detail-note mt-6 mb-5 text-sm text-gray-600 leading-relaxed">
+          {book.participateNote}
+        </p>
 
-        <section class="flow-panel mt-5">
-          <h2 class="text-lg font-bold text-ink-900">Inscripción</h2>
-          <p class="mt-3 text-sm text-ink-800 leading-relaxed">
-            {book.participateNote}
-          </p>
-        </section>
-
-        <a
-          href={participarUrl}
-          class="btn-primary mt-8 w-full sm:w-auto inline-flex justify-center text-base px-10 py-4"
-        >
-          Participar ahora
-        </a>
+        <div class="book-detail-actions">
+          <a href={participarUrl} class="btn-primary book-detail-btn">
+            Participar ahora
+          </a>
+        </div>
+      </div>
       </div>
     </div>
+
+    <img
+      src="/estrellas izquierda.png"
+      alt=""
+      class="book-detail-stars-left"
+      width={340}
+      height={340}
+      loading="eager"
+      decoding="async"
+      aria-hidden="true"
+    />
+    <img
+      src="/luna.png"
+      alt=""
+      class="book-detail-moon"
+      width={340}
+      height={340}
+      loading="eager"
+      decoding="async"
+      aria-hidden="true"
+    />
   </div>
 </BaseLayout>

@@ -1,20 +1,18 @@
 ---
-const pathname = Astro.url.pathname;
-const isHome = pathname === "/";
+import NavScrollSpy from "./NavScrollSpy.tsx";
 
 const nav = [
-  { label: "Inicio", href: "/" },
-  { label: "Retos", href: "/#retos" },
-  { label: "¿Cómo participar?", href: "/#como-participar" },
-  { label: "Regístrate", href: "/#registrate" },
-  { label: "Premios", href: "/#premios" },
-  { label: "Ganadores", href: "/#ganadores" },
+  { label: "Inicio", href: "/", section: "inicio" },
+  { label: "¿Cómo participar?", href: "/#como-participar", section: "como-participar" },
+  { label: "Retos", href: "/#retos", section: "retos" },
+  { label: "Premios", href: "/#premios", section: "premios" },
 ];
 ---
 
 <header class="w-full bg-white sticky top-0 z-50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.12)]">
-  <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 h-[5.5rem] sm:h-[6.25rem] flex items-center justify-between gap-6">
+  <NavScrollSpy client:load />
 
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 h-[5.5rem] sm:h-[6.25rem] flex items-center justify-between gap-6">
     <a href="/" class="shrink-0">
       <img
         src="/loqueleo.png"
@@ -25,64 +23,17 @@ const nav = [
       />
     </a>
 
-    <nav class="hidden md:flex items-center justify-end gap-8 lg:gap-10 ml-auto">
-      {nav.map((item) => {
-        const active = item.href === "/" && isHome;
-        return (
-          <a
-            href={item.href}
-            class:list={[
-              "group text-base lg:text-lg font-semibold transition flex flex-col items-center leading-none",
-              active
-                ? "text-[color:var(--color-brand-red)]"
-                : "text-[color:var(--color-ink-800)] hover:text-[color:var(--color-brand-red)]",
-            ]}
-          >
-            {item.label}
-            <span
-              class:list={[
-                "mt-1 h-3 w-9 transition-opacity duration-150",
-                active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-              ]}
-              style="
-                background-color: var(--color-brand-red);
-                -webkit-mask-image: url('/libro.svg');
-                -webkit-mask-repeat: no-repeat;
-                -webkit-mask-position: center;
-                -webkit-mask-size: contain;
-                mask-image: url('/libro.svg');
-                mask-repeat: no-repeat;
-                mask-position: center;
-                mask-size: contain;
-              "
-              aria-hidden="true"
-            />
-          </a>
-        );
-      })}
-    </nav>
-
-  </div>
-
-  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100">
-    {nav.map((item) => {
-      const active = item.href === "/" && isHome;
-      return (
+    <nav class="hidden md:flex items-center justify-end gap-8 lg:gap-10 ml-auto" aria-label="Principal">
+      {nav.map((item) => (
         <a
           href={item.href}
-          class:list={[
-            "group text-sm font-semibold whitespace-nowrap shrink-0 py-1 flex flex-col items-center leading-none",
-            active
-              ? "text-[color:var(--color-brand-red)]"
-              : "text-[color:var(--color-ink-800)]",
-          ]}
+          data-nav-link
+          data-section={item.section}
+          class="nav-link group text-base lg:text-lg font-semibold transition flex flex-col items-center leading-none text-[color:var(--color-ink-800)] hover:text-[color:var(--color-brand-red)]"
         >
           {item.label}
           <span
-            class:list={[
-              "mt-1 h-2.5 w-8 transition-opacity duration-150",
-              active ? "opacity-100" : "opacity-0",
-            ]}
+            class="nav-link-indicator mt-1 h-3 w-9 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
             style="
               background-color: var(--color-brand-red);
               -webkit-mask-image: url('/libro.svg');
@@ -97,7 +48,35 @@ const nav = [
             aria-hidden="true"
           />
         </a>
-      );
-    })}
+      ))}
+    </nav>
+  </div>
+
+  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100" aria-label="Principal móvil">
+    {nav.map((item) => (
+      <a
+        href={item.href}
+        data-nav-link
+        data-section={item.section}
+        class="nav-link group text-sm font-semibold whitespace-nowrap shrink-0 py-1 flex flex-col items-center leading-none text-[color:var(--color-ink-800)]"
+      >
+        {item.label}
+        <span
+          class="nav-link-indicator mt-1 h-2.5 w-8 opacity-0 transition-opacity duration-150"
+          style="
+            background-color: var(--color-brand-red);
+            -webkit-mask-image: url('/libro.svg');
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+            mask-image: url('/libro.svg');
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+          "
+          aria-hidden="true"
+        />
+      </a>
+    ))}
   </nav>
 </header>

@@ -6,29 +6,29 @@
 const steps = [
   {
     n: "01",
-    title: "Lee la obra",
-    desc:  "Elige el libro de tu edad y disfruta de la lectura junto a tu familia o tu salón.",
+    title: "Elige tu reto",
+    desc:  "Explora los libros de tu edad y escoge el reto que más te emocione.",
     tint:  "var(--color-blush-300)",
     icon:  "book",
   },
   {
     n: "02",
-    title: "Crea tu reto",
-    desc:  "Escribe, ilustra, graba o compone según el rol creativo que te tocó.",
+    title: "Crea tu proyecto",
+    desc:  "Escribe, ilustra, graba o compone según las indicaciones de tu reto.",
     tint:  "var(--color-sun-300)",
     icon:  "spark",
   },
   {
     n: "03",
-    title: "Regístrate",
-    desc:  "Sube tu trabajo en la sección de inscripción con los datos de tu colegio.",
+    title: "Sube tu trabajo",
+    desc:  "Regístrate con los datos de tu colegio y envía tu archivo en el formulario.",
     tint:  "var(--color-mint-300)",
-    icon:  "user",
+    icon:  "upload",
   },
   {
     n: "04",
-    title: "¡Gana!",
-    desc:  "Participa por libros, kits, talleres con autores y reconocimientos nacionales.",
+    title: "Participa y gana",
+    desc:  "Compite por libros, kits, talleres con autores y reconocimientos nacionales.",
     tint:  "var(--color-aqua-300)",
     icon:  "trophy",
   },
@@ -76,8 +76,8 @@ const steps = [
             {s.icon === "spark" && (
               <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>
             )}
-            {s.icon === "user" && (
-              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 14a4 4 0 1 0-8 0M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            {s.icon === "upload" && (
+              <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0 4 4m-4-4-4 4M4 20h16"/></svg>
             )}
             {s.icon === "trophy" && (
               <svg class="w-6 h-6 text-[color:var(--color-ink-800)]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3"/></svg>

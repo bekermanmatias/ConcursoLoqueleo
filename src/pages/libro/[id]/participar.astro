@@ -22,31 +22,37 @@ const { accent } = ageUiStyles[book.age];
   title={`Participar — ${book.title}`}
   description="Registro y subida de tu trabajo para Soy Loqueleo 2026."
 >
-  <div class="py-6 sm:py-10">
-    <nav class="mb-8 flex flex-wrap items-center justify-between gap-3">
-      <a
-        href={`/libro/${book.id}`}
-        class="text-sm font-semibold text-gray-500 hover:text-[color:var(--color-brand-red)] transition"
-      >
-        ← Volver al reto
-      </a>
-      <span class="text-sm font-semibold text-gray-400">{book.title}</span>
-    </nav>
+  <div class="book-detail-page py-4 sm:py-6 pb-12 sm:pb-16 lg:pb-20">
+    <div class="book-detail-inner relative z-10">
+      <div class="participar-form">
+        <RegistrationWizard
+          client:load
+          bookId={book.id}
+          bookTitle={book.title}
+          accent={accent}
+        />
+      </div>
+    </div>
 
-    <header class="text-center max-w-lg mx-auto mb-8">
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-ink-900">
-        Registro y subida
-      </h1>
-      <p class="mt-2 text-gray-500 text-sm">
-        Rápido, guiado y seguro. Completa los pasos para enviar tu participación.
-      </p>
-    </header>
-
-    <RegistrationWizard
-      client:load
-      bookId={book.id}
-      bookTitle={book.title}
-      accent={accent}
+    <img
+      src="/estrellas izquierda.png"
+      alt=""
+      class="book-detail-stars-left"
+      width={340}
+      height={340}
+      loading="eager"
+      decoding="async"
+      aria-hidden="true"
+    />
+    <img
+      src="/luna.png"
+      alt=""
+      class="book-detail-moon"
+      width={340}
+      height={340}
+      loading="eager"
+      decoding="async"
+      aria-hidden="true"
     />
   </div>
 </BaseLayout>
