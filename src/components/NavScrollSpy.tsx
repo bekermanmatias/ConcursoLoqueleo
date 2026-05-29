@@ -13,30 +13,31 @@ function setActiveSection(sectionId: SectionId) {
 }
 
 function getScrollAnchorOffset(): number {
-  const headerHeight = document.querySelector("header")?.offsetHeight ?? 88;
-  const extra = window.matchMedia("(max-width: 767px)").matches ? 60 : 20;
+  const headerHeight =
+    document.querySelector(".site-header")?.offsetHeight ??
+    document.querySelector("header")?.offsetHeight ??
+    88;
+  const extra = window.matchMedia("(max-width: 767px)").matches ? 16 : 20;
   return headerHeight + extra;
 }
 
-/** Sección con más área visible bajo el header (evita que #inicio gane siempre). */
-function getActiveSection(): SectionId {
-  const offset = getScrollAnchorOffset();
-  const viewportBottom = window.innerHeight;
+function getSectionRoot(id: SectionId): HTMLElement | null {
+  return (
+    document.querySelector<HTMLElement>(`[data-nav-section="${id}"]`) ??
+    document.getElementById(id)
+  );
+}
 
+/** Última sección cuyo inicio ya pasó la línea bajo el header. */
+function getActiveSection(): SectionId {
+  const anchorLine = getScrollAnchorOffset();
   let active: SectionId = "inicio";
-  let bestVisible = 0;
 
   for (const id of SECTIONS) {
-    const el = document.getElementById(id);
+    const el = getSectionRoot(id);
     if (!el) continue;
 
-    const rect = el.getBoundingClientRect();
-    const visibleTop = Math.max(rect.top, offset);
-    const visibleBottom = Math.min(rect.bottom, viewportBottom);
-    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-
-    if (visibleHeight > bestVisible) {
-      bestVisible = visibleHeight;
+    if (el.getBoundingClientRect().top <= anchorLine) {
       active = id;
     }
   }

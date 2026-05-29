@@ -1,30 +1,25 @@
 ---
 import NavScrollSpy from "./NavScrollSpy.tsx";
-
-const nav = [
-  { label: "Inicio", href: "/", section: "inicio" },
-  { label: "¿Cómo participar?", href: "/#como-participar", section: "como-participar" },
-  { label: "Retos", href: "/#retos", section: "retos" },
-  { label: "Premios", href: "/#premios", section: "premios" },
-];
+import MobileNav from "./MobileNav.tsx";
+import { mainNav } from "../data/nav";
 ---
 
-<header class="w-full bg-white sticky top-0 z-50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.12)]">
+<header class="site-header w-full bg-white sticky top-0 z-50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.12)]">
   <NavScrollSpy client:load />
 
-  <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 h-[5.5rem] sm:h-[6.25rem] flex items-center justify-between gap-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 h-[var(--site-header-height)] flex items-center justify-between gap-4">
     <a href="/" class="shrink-0">
       <img
         src="/loqueleo.png"
         alt="Loqueleo"
-        class="h-12 sm:h-14 lg:h-16 w-auto"
+        class="h-10 sm:h-12 lg:h-14 w-auto"
         width="180"
         height="64"
       />
     </a>
 
     <nav class="hidden md:flex items-center justify-end gap-8 lg:gap-10 ml-auto" aria-label="Principal">
-      {nav.map((item) => (
+      {mainNav.map((item) => (
         <a
           href={item.href}
           data-nav-link
@@ -50,33 +45,7 @@ const nav = [
         </a>
       ))}
     </nav>
-  </div>
 
-  <nav class="md:hidden flex overflow-x-auto gap-5 px-5 pb-4 border-t border-gray-100" aria-label="Principal móvil">
-    {nav.map((item) => (
-      <a
-        href={item.href}
-        data-nav-link
-        data-section={item.section}
-        class="nav-link group text-sm font-semibold whitespace-nowrap shrink-0 py-1 flex flex-col items-center leading-none text-[color:var(--color-ink-800)]"
-      >
-        {item.label}
-        <span
-          class="nav-link-indicator mt-1 h-2.5 w-8 opacity-0 transition-opacity duration-150"
-          style="
-            background-color: var(--color-brand-red);
-            -webkit-mask-image: url('/libro.svg');
-            -webkit-mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            -webkit-mask-size: contain;
-            mask-image: url('/libro.svg');
-            mask-repeat: no-repeat;
-            mask-position: center;
-            mask-size: contain;
-          "
-          aria-hidden="true"
-        />
-      </a>
-    ))}
-  </nav>
+    <MobileNav client:load items={mainNav} />
+  </div>
 </header>
