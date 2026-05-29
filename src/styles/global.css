@@ -49,7 +49,8 @@
   #inicio,
   #como-participar,
   #retos,
-  #premios {
+  #premios,
+  #ayuda {
     scroll-margin-top: var(--scroll-anchor-offset);
   }
 
@@ -68,7 +69,7 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-bold text-white transition;
+    @apply inline-flex cursor-pointer items-center justify-center px-8 py-3.5 rounded-full font-bold text-white transition;
     background: var(--color-brand-red);
   }
   .btn-primary:hover {
@@ -95,6 +96,14 @@
 
   .section-title {
     @apply text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ink-900 tracking-tight leading-[1.1];
+  }
+
+  .retos-notice {
+    @apply rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-ink-700;
+  }
+
+  .retos-notice strong {
+    @apply font-semibold text-ink-900;
   }
 
   .nav-link--active {
@@ -266,11 +275,19 @@
   }
 
   .prizes-how-grid {
-    @apply mb-12 grid gap-4 sm:grid-cols-3 sm:items-stretch sm:gap-5;
+    @apply mb-12 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:items-start sm:gap-6 lg:gap-8;
   }
 
   .prizes-how-card {
-    @apply flex h-full flex-col py-1;
+    @apply flex items-start gap-3 py-1 sm:gap-3.5;
+  }
+
+  .prizes-how-card-icon {
+    @apply h-[5.5rem] w-[5.5rem] shrink-0 object-contain sm:h-24 sm:w-24 lg:h-28 lg:w-28;
+  }
+
+  .prizes-how-card-copy {
+    @apply min-w-0 flex-1 pt-0.5 sm:pt-1;
   }
 
   .prizes-how-card--estudiantes .prizes-how-card-title {
@@ -293,16 +310,12 @@
     @apply mt-2 text-sm leading-relaxed text-ink-700;
   }
 
-  .prizes-matrix {
-    @apply flex flex-col gap-10 lg:gap-12;
+  .prizes-columns {
+    @apply grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-x-12;
   }
 
-  .prizes-matrix-row {
-    @apply grid grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-x-12 lg:gap-y-0;
-  }
-
-  .prizes-matrix-row--headers {
-    @apply gap-6 lg:gap-x-12;
+  .prizes-column {
+    @apply flex min-w-0 flex-col gap-10;
   }
 
   .prizes-column-intro--primaria {
@@ -333,89 +346,66 @@
     @apply mt-0.5 text-sm font-semibold text-ink-700;
   }
 
-  .prizes-block--estudiantes {
+  .prizes-group-cards {
+    @apply flex flex-col;
+  }
+
+  .prizes-item--estudiantes {
     --prizes-accent: var(--color-countdown-red);
   }
 
-  .prizes-block--docentes {
+  .prizes-column--secundaria .prizes-item--estudiantes {
+    --prizes-accent: var(--color-countdown-green);
+  }
+
+  .prizes-item--docentes {
     --prizes-accent: var(--color-countdown-purple);
   }
 
-  .prizes-block--colegios {
+  .prizes-item--colegios {
     --prizes-accent: var(--color-countdown-blue);
   }
 
-  .prizes-photo-slot {
-    @apply relative block w-full shrink-0 overflow-hidden rounded-2xl;
-    background: color-mix(in srgb, var(--prizes-accent, var(--color-countdown-red)) 12%, #f5f5f5);
+  .prizes-item {
+    @apply flex flex-col gap-3 border-t border-gray-200 py-6 first:border-t-0 first:pt-0;
   }
 
-  .prizes-block-photo.prizes-photo-slot {
-    @apply aspect-[4/3] w-full sm:h-[8.625rem] sm:w-[11.5rem];
+  .prizes-item-title {
+    @apply text-xl font-extrabold leading-tight sm:text-2xl;
+    color: var(--prizes-accent);
+  }
+
+  .prizes-photo-slot {
+    @apply relative block w-full shrink-0;
+  }
+
+  .prizes-item-photo.prizes-photo-slot {
+    @apply block w-full leading-none;
   }
 
   .prizes-photo-placeholder {
-    @apply block h-full min-h-[7rem] w-full sm:min-h-0;
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--prizes-accent, #ccc) 18%, #f0f0f0) 0%,
-      #f8f8f8 50%,
-      color-mix(in srgb, var(--prizes-accent, #ccc) 10%, #f0f0f0) 100%
-    );
+    @apply block aspect-[16/9] w-full bg-[#f3f3f3];
   }
 
   .prizes-photo-img {
-    @apply h-full w-full object-cover;
+    @apply block h-auto w-full;
   }
 
-  .prizes-block {
-    @apply flex h-full flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6;
+  .prizes-item-body {
+    @apply flex min-w-0 flex-col;
   }
 
-  .prizes-block-copy {
-    @apply flex min-w-0 flex-1 flex-col;
+  .prizes-item-how {
+    @apply mt-1;
   }
 
-  .prizes-block-title {
-    @apply text-lg font-extrabold;
-    color: var(--prizes-accent);
-  }
-
-  .prizes-block-place {
-    @apply mt-0.5 text-sm font-bold;
-    color: var(--prizes-accent);
-  }
-
-  .prizes-block-how {
-    @apply mt-4;
-  }
-
-  .prizes-block-how-label {
+  .prizes-item-label {
     @apply text-xs font-bold uppercase tracking-wide;
     color: var(--prizes-accent);
   }
 
-  .prizes-block-how-text {
+  .prizes-item-text {
     @apply mt-1.5 text-sm leading-relaxed text-ink-800;
-  }
-
-  .prizes-block-prizes-label {
-    @apply mt-4 text-xs font-bold uppercase tracking-wide;
-    color: var(--prizes-accent);
-  }
-
-  .prizes-block-list {
-    @apply mt-3 list-none space-y-2 text-sm leading-relaxed text-ink-800 sm:text-base;
-  }
-
-  .prizes-block-list li {
-    @apply relative pl-4;
-  }
-
-  .prizes-block-list li::before {
-    content: "—";
-    @apply absolute left-0 font-bold;
-    color: var(--prizes-accent);
   }
 
   .book-card-body {
@@ -435,6 +425,14 @@
 
   .book-card-author {
     @apply mt-1 w-full shrink-0 text-xs leading-snug text-gray-500 line-clamp-2;
+  }
+
+  .book-card-grade {
+    @apply mb-1 w-full shrink-0 text-sm font-bold leading-snug sm:text-base;
+  }
+
+  .book-detail-grade {
+    @apply mb-1 text-base font-bold sm:text-lg;
   }
 
   .book-card-top-spacer {
@@ -591,7 +589,7 @@
 
   .book-detail-actions .challenge-instructions-btn,
   .book-detail-actions .book-detail-btn {
-    @apply box-border w-full justify-center text-base font-bold py-3.5 px-6;
+    @apply box-border w-full cursor-pointer justify-center text-base font-bold py-3.5 px-6;
   }
 
   .challenge-instructions-btn:hover {
@@ -667,11 +665,11 @@
   }
 
   .wizard-progress-track {
-    @apply relative h-3.5 w-full overflow-visible rounded-full bg-gray-200 pr-[5.5rem] sm:pr-[6rem];
+    @apply relative h-3.5 w-full overflow-visible rounded-full bg-gray-200 pr-[6.5rem] sm:pr-[8rem];
   }
 
   .wizard-progress-planet--end {
-    @apply absolute right-0 top-1/2 z-20 h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] -translate-y-1/2 translate-x-[55%] object-contain drop-shadow-md pointer-events-none select-none;
+    @apply absolute right-0 top-1/2 z-20 h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 -translate-y-1/2 translate-x-[55%] object-contain drop-shadow-md pointer-events-none select-none;
   }
 
   .wizard-progress-fill {
@@ -759,6 +757,10 @@
 
   .form-field:disabled {
     @apply cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400;
+  }
+
+  .form-field--readonly {
+    @apply cursor-default border-gray-100 bg-gray-50 text-ink-800;
   }
 
   .form-select-wrap {
@@ -882,12 +884,54 @@
     @apply text-green-700;
   }
 
+  /* Atrás | Siguiente siempre en fila; altura fija entre pasos */
   .wizard-actions {
-    @apply mt-auto grid w-full shrink-0 grid-cols-2 gap-3 pt-4;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: auto;
+    flex-shrink: 0;
+    padding-top: 1rem;
+    min-height: 4.375rem;
+  }
+
+  .wizard-actions-forward {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 3.375rem;
+  }
+
+  .wizard-actions-forward .wizard-btn {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .wizard-btn {
-    @apply inline-flex h-[3.375rem] w-full items-center justify-center rounded-full px-3 text-center text-sm font-bold leading-tight transition;
+    display: inline-flex;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 3.375rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  .wizard-btn:disabled {
+    cursor: not-allowed;
   }
 
   .wizard-btn--outline {
@@ -896,6 +940,28 @@
 
   .wizard-btn--primary {
     @apply text-white;
+  }
+
+  .wizard-btn--hidden {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  @media (max-width: 639px) {
+    .wizard-actions {
+      gap: 0.625rem;
+      padding-top: 0.75rem;
+      min-height: 3.75rem;
+    }
+
+    .wizard-actions-forward {
+      min-height: 3rem;
+    }
+
+    .wizard-btn {
+      height: 3rem;
+      font-size: 0.75rem;
+    }
   }
 
   .wizard-dropzone {
@@ -1149,5 +1215,184 @@
 
   .how-participate-cta {
     @apply px-12;
+  }
+
+  /* Ayuda — consulta por DNI */
+  .ayuda-section {
+    @apply relative z-30 border-t border-gray-100 pt-14 pb-16 sm:pt-20 sm:pb-20;
+  }
+
+  .ayuda-header {
+    @apply mb-8 max-w-2xl sm:mb-10;
+  }
+
+  .ayuda-subtitle {
+    @apply mt-3 text-sm leading-relaxed text-ink-700 sm:text-base;
+  }
+
+  .ayuda-body {
+    @apply max-w-2xl;
+  }
+
+  .help-intro-lead {
+    @apply text-sm leading-relaxed text-ink-700 sm:text-base;
+  }
+
+  .help-scenarios {
+    @apply mt-4 space-y-2 pl-5 text-sm leading-relaxed text-ink-700;
+    list-style: disc;
+  }
+
+  .help-scenario strong {
+    @apply font-semibold text-ink-900;
+  }
+
+  .help-intro-btn {
+    @apply mt-8 inline-flex w-full sm:w-auto;
+  }
+
+  .help-lookup {
+    @apply mt-8 max-w-2xl;
+  }
+
+  .ayuda-consult-page {
+    @apply max-w-2xl mx-auto;
+  }
+
+  .ayuda-consult-header {
+    @apply mb-8 max-w-2xl sm:mb-10;
+  }
+
+  .ayuda-demo-note {
+    @apply mt-6 text-xs leading-relaxed text-gray-400;
+  }
+
+  .help-search {
+    @apply space-y-3;
+  }
+
+  .help-search-row {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center;
+  }
+
+  .help-search-input {
+    @apply sm:flex-1;
+  }
+
+  .help-search-btn {
+    @apply w-full shrink-0 sm:w-auto;
+  }
+
+  .help-message {
+    @apply mt-6 text-sm leading-relaxed text-gray-600;
+  }
+
+  .help-message--error {
+    @apply text-[color:var(--color-brand-red)];
+  }
+
+  .help-message--success {
+    @apply text-ink-800;
+  }
+
+  .help-reupload {
+    @apply mt-10;
+  }
+
+  .help-reupload-lead {
+    @apply text-sm leading-relaxed text-ink-800;
+  }
+
+  .help-reupload-note {
+    @apply mt-2 mb-4 text-sm text-gray-500;
+  }
+
+  .help-reupload-btn,
+  .help-print-btn {
+    @apply mt-4 w-full sm:w-auto;
+  }
+
+  .help-result {
+    @apply mt-10 space-y-4;
+  }
+
+  .help-result-title {
+    @apply text-lg font-bold text-ink-900 sm:text-xl;
+  }
+
+  .help-result-meta {
+    @apply text-sm text-gray-500;
+  }
+
+  .help-result-details {
+    @apply space-y-4 text-sm leading-relaxed text-ink-700;
+  }
+
+  .help-result-details dt {
+    @apply font-semibold text-ink-900;
+  }
+
+  .help-result-details dd {
+    @apply mt-1;
+  }
+
+  .help-result-details .help-result-code {
+    @apply font-mono font-bold text-[color:var(--color-brand-red)];
+  }
+
+  .participation-certificate {
+    @apply sr-only;
+  }
+
+  .participation-certificate-inner {
+    @apply mx-auto max-w-xl rounded-2xl border-2 border-gray-200 bg-white p-8 text-center;
+  }
+
+  .participation-certificate-brand {
+    @apply text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--color-brand-red)];
+  }
+
+  .participation-certificate-title {
+    @apply mt-3 text-2xl font-extrabold text-ink-900;
+  }
+
+  .participation-certificate-text {
+    @apply mt-4 text-sm leading-relaxed text-gray-700;
+  }
+
+  .participation-certificate-meta {
+    @apply mt-6 grid gap-3 text-left text-sm;
+  }
+
+  .participation-certificate-meta dt {
+    @apply text-xs font-bold uppercase tracking-wider text-gray-400;
+  }
+
+  .participation-certificate-meta dd {
+    @apply mt-0.5 font-semibold text-ink-900;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #participation-certificate,
+  #participation-certificate * {
+    visibility: visible;
+  }
+
+  #participation-certificate {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 2rem;
+  }
+
+  #participation-certificate .participation-certificate-inner {
+    border: none;
+    box-shadow: none;
   }
 }

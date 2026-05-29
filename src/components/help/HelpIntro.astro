@@ -1,0 +1,25 @@
+---
+import { helpIntroLead, helpScenarios } from "../../data/help";
+
+interface Props {
+  showLead?: boolean;
+}
+
+const { showLead = true } = Astro.props;
+---
+
+<div class="help-intro">
+  {showLead && <p class="help-intro-lead">{helpIntroLead}</p>}
+
+  <ul class="help-scenarios">
+    {
+      helpScenarios.map((item) => (
+        <li class="help-scenario">
+          {item.text}
+          <strong>{item.accent}</strong>
+          {item.suffix ?? ""}.
+        </li>
+      ))
+    }
+  </ul>
+</div>

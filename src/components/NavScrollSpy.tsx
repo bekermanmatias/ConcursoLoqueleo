@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SECTIONS = ["inicio", "como-participar", "retos", "premios"] as const;
+const SECTIONS = ["inicio", "como-participar", "retos", "premios", "ayuda"] as const;
 
 type SectionId = (typeof SECTIONS)[number];
 

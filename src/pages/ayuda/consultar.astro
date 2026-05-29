@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import HelpIntro from "../../components/help/HelpIntro.astro";
+import HelpLookup from "../../components/help/HelpLookup.tsx";
+import {
+  helpConsultDescription,
+  helpConsultTitle,
+  helpDemoNote,
+} from "../../data/help";
+---
+
+<BaseLayout
+  title={`${helpConsultTitle} — Soy Loqueleo 2026`}
+  description={helpConsultDescription}
+>
+  <div class="ayuda-consult-page py-10 sm:py-14 pb-16 sm:pb-20">
+    <header class="ayuda-consult-header">
+      <h1 class="section-title">{helpConsultTitle}</h1>
+      <p class="ayuda-subtitle">{helpConsultDescription}</p>
+    </header>
+
+    <div class="ayuda-body">
+      <HelpIntro />
+      <HelpLookup client:load />
+    </div>
+
+    <p class="ayuda-demo-note">{helpDemoNote}</p>
+  </div>
+</BaseLayout>

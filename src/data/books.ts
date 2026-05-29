@@ -1,3 +1,5 @@
+import type { Grado } from "./locations";
+
 export type AgeKey = "todo" | "+6" | "+8" | "+10" | "+12" | "+14";
 
 export interface AgeFilterItem {
@@ -21,6 +23,8 @@ export interface Book {
   author: string;
   cover: string;
   role: string;
+  /** Grado al que corresponde esta obra (orden fijo en el array `books`) */
+  grade: Grado;
   age: Exclude<AgeKey, "todo">;
   /** Párrafo breve que introduce el reto (opcional) */
   challengeIntro?: string;
@@ -52,6 +56,7 @@ export const books: Book[] = [
     author: "Andrea Paz / Claudia Paz",
     cover: "/libro/1.png",
     role: "Soy un(a) compositor(a).",
+    grade: "1ro primaria",
     age: "+6",
     challengeHeadline: "Escribe una rima basada en el cuento y la ilustra.",
     challenge:
@@ -76,6 +81,7 @@ export const books: Book[] = [
     author: "Jorge Eslava",
     cover: "/libro/2.png",
     role: "Soy un(a) amigo(a).",
+    grade: "2do primaria",
     age: "+6",
     challengeIntro:
       "En el libro hay personajes con personalidades muy distintas. Piensa en cuál te habría gustado conocer de verdad.",
@@ -98,6 +104,7 @@ export const books: Book[] = [
     author: "Lorenzo Helguero",
     cover: "/libro/3.png",
     role: "Soy un(a) lector(a).",
+    grade: "3ro primaria",
     age: "+8",
     challengeIntro:
       "La familia del libro vive entre libros y pantallas. Seguro tú también tienes una escena favorita.",
@@ -120,6 +127,7 @@ export const books: Book[] = [
     author: "Vicky Canales",
     cover: "/libro/4.png",
     role: "Soy un(a) reportero(a).",
+    grade: "4to primaria",
     age: "+8",
     challengeIntro:
       "Las tres gallinas armaron un plan para atrapar al ladrón. Tú puedes contar otra versión de lo que pasó en el granero.",
@@ -142,6 +150,7 @@ export const books: Book[] = [
     author: "Jorge Eslava",
     cover: "/libro/5.png",
     role: "Soy un(a) propagandista.",
+    grade: "5to primaria",
     age: "+10",
     challengeIntro:
       "Misha vive una historia intensa en la selva. Piensa qué imagen o frase haría que alguien quiera abrir el libro hoy mismo.",
@@ -164,6 +173,7 @@ export const books: Book[] = [
     author: "Iván Bolaños Gamero",
     cover: "/libro/6.png",
     role: "Soy un(a) inventor(a).",
+    grade: "6to primaria",
     age: "+10",
     challengeIntro:
       "El Comando Espacial usa artefactos muy particulares. ¿Y si tu equipo necesitara un invento nuevo para la siguiente misión?",
@@ -178,7 +188,7 @@ export const books: Book[] = [
       "Colegio registrado en Loqueleo",
     ],
     participateNote:
-      "Puedes filmar la explicación con el celular. El formulario de inscripción es el mismo para todos los libros de tu edad.",
+      "Puedes filmar la explicación con el celular. Recuerda: este reto es solo para 6.° de primaria y cada estudiante participa una vez.",
   },
   {
     id: "yute-tocuyo-12",
@@ -186,6 +196,7 @@ export const books: Book[] = [
     author: "Rafael Lanfranco",
     cover: "/libro/7.png",
     role: "Soy un(a) escritor(a).",
+    grade: "1ro secundaria",
     age: "+12",
     challengeIntro:
       "Yute y Tocuyo se atreven a algo imposible. Tu reto es seguir esa energía y abrir un capítulo nuevo.",
@@ -208,6 +219,7 @@ export const books: Book[] = [
     author: "Iván Thays",
     cover: "/libro/8.png",
     role: "Soy un(a) fabulador(a).",
+    grade: "2do secundaria",
     age: "+12",
     challengeIntro:
       "En la novela, la maleta guarda más que ropa. Si tú armaras la tuya para un viaje importante, ¿qué llevarías?",
@@ -230,6 +242,7 @@ export const books: Book[] = [
     author: "María Fernanda Heredia",
     cover: "/libro/9.png",
     role: "Soy un(a) booktoker.",
+    grade: "3ro secundaria",
     age: "+14",
     challengeIntro:
       "Ocho segundos habla de decisiones que cambian todo en muy poco tiempo. Es un libro ideal para contarlo en voz alta y directo.",
@@ -252,6 +265,7 @@ export const books: Book[] = [
     author: "Javier Arévalo",
     cover: "/libro/10.png",
     role: "Soy un(a) periodista.",
+    grade: "4to secundaria",
     age: "+14",
     challengeIntro:
       "La tía Levita guarda secretos que el pueblo comenta a media voz. Un buen periodista sabe hacer las preguntas difíciles.",
@@ -274,6 +288,7 @@ export const books: Book[] = [
     author: "Jorge Eslava",
     cover: "/libro/11.png",
     role: "Soy un(a) crítico(a).",
+    grade: "5to secundaria",
     age: "+14",
     challengeIntro:
       "Sol tan lejos mezcla memoria, viaje y fotografía. Como crítico literario, tu lectura puede ayudar a otro estudiante a decidir si es su próximo libro.",

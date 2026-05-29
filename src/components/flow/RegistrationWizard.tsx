@@ -2,30 +2,32 @@ import { useMemo, useState, type CSSProperties } from "react";
 import FileDropzone from "./FileDropzone";
 import FormSelect from "./FormSelect";
 import { WizardJourneyHead, WizardProgressBar } from "./WizardProgress";
+import { formatGradeLabel } from "../../lib/books";
+import { saveParticipation, isDniBlockedForRegistration } from "../../lib/participations";
 import {
   ciudadesPorDepartamento,
   colegiosMock,
   departamentos,
   distritosPorCiudad,
-  dniRegistrados,
-  grados,
+  type Grado,
 } from "../../data/locations";
 
 interface Props {
   bookId: string;
   bookTitle: string;
+  bookGrade: Grado;
+  bookAge: string;
   accent: string;
 }
 
 type Step = 1 | 2 | 3;
 
-export default function RegistrationWizard({ bookId, bookTitle, accent }: Props) {
+export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookAge, accent }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [departamento, setDepartamento] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [distrito, setDistrito] = useState("");
   const [colegio, setColegio] = useState("");
-  const [grado, setGrado] = useState("");
   const [dni, setDni] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
@@ -52,10 +54,9 @@ export default function RegistrationWizard({ bookId, bookTitle, accent }: Props)
     }
     if (currentStep === 2) {
       if (!colegio) return "Elige tu colegio para continuar.";
-      if (!grado) return "Elige tu grado para continuar.";
       if (dniLimpio.length !== 8) return "Escribe un DNI de 8 números.";
-      if (dniRegistrados.has(dniLimpio)) {
-        return "Este DNI ya participó. Si necesitas ayuda, pregunta a tu profe o apoderado.";
+      if (isDniBlockedForRegistration(dniLimpio)) {
+        return "Este DNI ya participó en un reto. Si tu archivo fue rechazado, corrígelo en Ayuda con tu DNI.";
       }
       return null;
     }
@@ -88,21 +89,28 @@ export default function RegistrationWizard({ bookId, bookTitle, accent }: Props)
     }
     setSubmitting(true);
     const code = `LL-${bookId.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-    sessionStorage.setItem(
-      "loqueleo-inscripcion",
-      JSON.stringify({
-        bookId,
-        bookTitle,
-        code,
-        departamento,
-        ciudad,
-        distrito,
-        colegio,
-        grado,
-        dni: dniLimpio,
-        fileName: file.name,
-      }),
-    );
+    const payload = {
+      bookId,
+      bookTitle,
+      code,
+      departamento,
+      ciudad,
+      distrito,
+      colegio,
+      grado: bookGrade,
+      dni: dniLimpio,
+      fileName: file.name,
+    };
+    sessionStorage.setItem("loqueleo-inscripcion", JSON.stringify(payload));
+    saveParticipation({
+      dni: dniLimpio,
+      code,
+      bookId,
+      bookTitle,
+      colegio,
+      grado: bookGrade,
+      fileName: file.name,
+    });
     window.location.href = `/libro/${bookId}/confirmacion`;
   };
 
@@ -180,15 +188,12 @@ export default function RegistrationWizard({ bookId, bookTitle, accent }: Props)
 
           <div className="wizard-label">
             <span className="wizard-label-text">Grado</span>
-            <FormSelect
-              value={grado}
-              onChange={(next) => {
-                setGrado(next);
-                setStepError("");
-              }}
-              options={grados}
-              placeholder="¿En qué grado estudias?"
-            />
+            <p className="form-field form-field--readonly" aria-readonly="true">
+              {formatGradeLabel(bookGrade)}
+            </p>
+            <p className="wizard-hint">
+              Este reto es solo para {formatGradeLabel(bookGrade)} ({bookAge}). Cada estudiante participa una vez.
+            </p>
           </div>
 
           <label className="wizard-label">
@@ -240,33 +245,35 @@ export default function RegistrationWizard({ bookId, bookTitle, accent }: Props)
             >
               Atrás
             </button>
-            <button
-              type="button"
-              onClick={goNext}
-              className={[
-                "wizard-btn wizard-btn--primary",
-                step >= 3 ? "invisible pointer-events-none" : "",
-              ].join(" ")}
-              style={{ background: accent }}
-              aria-hidden={step >= 3}
-              tabIndex={step >= 3 ? -1 : 0}
-            >
-              Siguiente
-            </button>
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={submit}
-              className={[
-                "wizard-btn wizard-btn--primary col-start-2 row-start-1 disabled:opacity-40",
-                step < 3 ? "invisible pointer-events-none" : "",
-              ].join(" ")}
-              style={{ background: accent }}
-              aria-hidden={step < 3}
-              tabIndex={step < 3 ? -1 : 0}
-            >
-              {submitting ? "Enviando tu trabajo…" : "¡Enviar mi trabajo!"}
-            </button>
+            <div className="wizard-actions-forward">
+              <button
+                type="button"
+                onClick={goNext}
+                className={[
+                  "wizard-btn wizard-btn--primary",
+                  step >= 3 ? "wizard-btn--hidden" : "",
+                ].join(" ")}
+                style={{ background: accent }}
+                aria-hidden={step >= 3}
+                tabIndex={step >= 3 ? -1 : 0}
+              >
+                Siguiente
+              </button>
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={submit}
+                className={[
+                  "wizard-btn wizard-btn--primary disabled:opacity-40",
+                  step < 3 ? "wizard-btn--hidden" : "",
+                ].join(" ")}
+                style={{ background: accent }}
+                aria-hidden={step < 3}
+                tabIndex={step < 3 ? -1 : 0}
+              >
+                {submitting ? "Enviando tu trabajo…" : "¡Enviar mi trabajo!"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

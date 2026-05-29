@@ -47,7 +47,9 @@ export const grados = [
   "3ro secundaria",
   "4to secundaria",
   "5to secundaria",
-];
+] as const;
+
+export type Grado = (typeof grados)[number];
 
 /** DNI ya registrados (demo) */
 export const dniRegistrados = new Set(["12345678", "87654321"]);

@@ -1,0 +1,31 @@
+---
+import HelpIntro from "./help/HelpIntro.astro";
+import {
+  helpConsultPath,
+  helpDemoNote,
+  helpSectionSubtitle,
+  helpSectionTitle,
+} from "../data/help";
+---
+
+<section
+  id="ayuda"
+  class="ayuda-section"
+  data-nav-section="ayuda"
+  aria-labelledby="ayuda-title"
+>
+  <header class="ayuda-header">
+    <h2 id="ayuda-title" class="section-title">{helpSectionTitle}</h2>
+    <p class="ayuda-subtitle">{helpSectionSubtitle}</p>
+  </header>
+
+  <div class="ayuda-body">
+    <HelpIntro />
+
+    <a href={helpConsultPath} class="help-intro-btn btn-primary">
+      Consultar mi participación
+    </a>
+  </div>
+
+  <p class="ayuda-demo-note">{helpDemoNote}</p>
+</section>

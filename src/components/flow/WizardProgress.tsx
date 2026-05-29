@@ -22,7 +22,7 @@ const stepConfig: Record<Step, StepConfig> = {
     title: "¿En qué colegio",
     titleAccent: "estudias?",
     description:
-      "Elige tu colegio, tu grado y escribe tu DNI. Con eso completamos tu participación.",
+      "Elige tu colegio y escribe tu DNI. Con eso completamos tu participación (un solo reto por estudiante).",
   },
   3: {
     percent: 82,
@@ -33,7 +33,7 @@ const stepConfig: Record<Step, StepConfig> = {
   },
 };
 
-const PLANET_END = encodeURI("/PLANETA 7.png");
+const MOON_END = encodeURI("/cohete/image 319.png");
 
 interface Props {
   step: Step;
@@ -52,11 +52,11 @@ export function WizardProgressBar({ step }: Props) {
             </span>
           </div>
           <img
-            src={PLANET_END}
+            src={MOON_END}
             alt=""
             className="wizard-progress-planet wizard-progress-planet--end"
-            width={72}
-            height={72}
+            width={128}
+            height={128}
             decoding="async"
             draggable={false}
             aria-hidden="true"

@@ -63,7 +63,14 @@ export default function ConfirmationView() {
           <span className="font-semibold text-ink-800">Archivo:</span> {data.fileName}
         </p>
         <p className="text-sm text-gray-500 pt-2">
-          Recibirás un correo de confirmación en los próximos minutos.
+          Guarda tu código. También puedes consultar tu estado o reimprimir tu constancia en{" "}
+          <a
+            href="/ayuda/consultar"
+            className="font-semibold text-[color:var(--color-brand-red)] hover:underline"
+          >
+            Consultar mi participación
+          </a>{" "}
+          con tu DNI.
         </p>
       </div>
 

@@ -9,4 +9,5 @@ export const mainNav: NavItem[] = [
   { label: "¿Cómo participar?", href: "/#como-participar", section: "como-participar" },
   { label: "Retos", href: "/#retos", section: "retos" },
   { label: "Premios", href: "/#premios", section: "premios" },
+  { label: "Ayuda", href: "/#ayuda", section: "ayuda" },
 ];

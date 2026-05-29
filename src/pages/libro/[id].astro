@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getBookById, getAllBookIds } from "../../lib/books";
+import { getBookById, getAllBookIds, formatGradeLabel } from "../../lib/books";
 import { ageUiStyles } from "../../data/books";
 
 export function getStaticPaths() {
@@ -16,6 +16,7 @@ if (!book) {
 
 const { accent } = ageUiStyles[book.age];
 const participarUrl = `/libro/${book.id}/participar`;
+const gradeLabel = formatGradeLabel(book.grade);
 ---
 
 <BaseLayout
@@ -41,8 +42,14 @@ const participarUrl = `/libro/${book.id}/participar`;
       </div>
 
       <div class="min-w-0">
+        <p class="book-detail-grade" style={`color: ${accent};`}>{gradeLabel}</p>
+        <h1 class="mt-1 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink-900 leading-tight">
+          {book.title}
+        </h1>
+        <p class="mt-2 text-gray-500">{book.author}</p>
+
         {!book.deliverable && (
-          <div class="book-card-role justify-start">
+          <div class="book-card-role justify-start mt-4">
             <span
               class="book-card-badge"
               style={`background: ${accent};`}
@@ -57,10 +64,6 @@ const participarUrl = `/libro/${book.id}/participar`;
             </p>
           </div>
         )}
-        <h1 class="mt-1 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink-900 leading-tight">
-          {book.title}
-        </h1>
-        <p class="mt-2 text-gray-500">{book.author}</p>
 
         {book.deliverable ? (
           <section class="challenge-simple mt-3" style={`--challenge-accent: ${accent};`}>
@@ -131,7 +134,12 @@ const participarUrl = `/libro/${book.id}/participar`;
           </div>
         )}
 
-        <p class="book-detail-note mt-6 mb-5 text-sm text-gray-600 leading-relaxed">
+        <p class="book-detail-note mt-6 text-sm text-gray-600 leading-relaxed">
+          Este reto es para <strong class="font-semibold text-ink-800">{gradeLabel}</strong>.
+          Cada estudiante puede participar en un solo reto del concurso.
+        </p>
+
+        <p class="book-detail-note mt-3 mb-5 text-sm text-gray-600 leading-relaxed">
           {book.participateNote}
         </p>
 

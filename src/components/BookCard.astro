@@ -1,6 +1,7 @@
 ---
 import type { Book } from "../data/books";
 import { ageUiStyles } from "../data/books";
+import { formatGradeLabel } from "../lib/books";
 
 interface Props {
   book: Book;
@@ -9,6 +10,7 @@ interface Props {
 const { book } = Astro.props;
 const { accent } = ageUiStyles[book.age];
 const bookUrl = `/libro/${book.id}`;
+const gradeLabel = formatGradeLabel(book.grade);
 ---
 
 <article data-age={book.age} class="h-full">
@@ -33,6 +35,7 @@ const bookUrl = `/libro/${book.id}`;
 
     <div class="book-card-body">
       <div class="book-card-top">
+        <p class="book-card-grade" style={`color: ${accent};`}>{gradeLabel}</p>
         <h3 class="book-card-title">{book.title}</h3>
         <p class="book-card-author">{book.author}</p>
         <div class="book-card-top-spacer" aria-hidden="true"></div>
