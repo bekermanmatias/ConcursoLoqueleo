@@ -4,6 +4,7 @@ import FormSelect from "./FormSelect";
 import { WizardJourneyHead, WizardProgressBar } from "./WizardProgress";
 import { formatGradeLabel } from "../../lib/books";
 import { saveParticipation, isDniBlockedForRegistration } from "../../lib/participations";
+import { uploadParticipationFile } from "../../lib/uploads";
 import {
   ciudadesPorDepartamento,
   colegiosMock,
@@ -45,6 +46,8 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookA
 
   const dniLimpio = dni.replace(/\D/g, "");
 
+  const [checkingDni, setCheckingDni] = useState(false);
+
   const validateStep = (currentStep: Step): string | null => {
     if (currentStep === 1) {
       if (!departamento || !ciudad || !distrito) {
@@ -55,39 +58,48 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookA
     if (currentStep === 2) {
       if (!colegio) return "Elige tu colegio para continuar.";
       if (dniLimpio.length !== 8) return "Escribe un DNI de 8 números.";
-      if (isDniBlockedForRegistration(dniLimpio)) {
-        return "Este DNI ya participó en un reto. Si tu archivo fue rechazado, corrígelo en Ayuda con tu DNI.";
-      }
       return null;
     }
     return null;
   };
 
-  const goNext = () => {
+  const goNext = async () => {
     const error = validateStep(step);
     if (error) {
       setStepError(error);
       return;
     }
+
+    if (step === 2) {
+      setCheckingDni(true);
+      try {
+        const blocked = await isDniBlockedForRegistration(dniLimpio);
+        if (blocked) {
+          setStepError(
+            "Este DNI ya participó en un reto. Si tu archivo fue rechazado, corrígelo en Ayuda con tu DNI.",
+          );
+          return;
+        }
+      } catch {
+        setStepError("No pudimos validar tu DNI. Intenta otra vez.");
+        return;
+      } finally {
+        setCheckingDni(false);
+      }
+    }
+
     setStepError("");
     setStep((s) => (s + 1) as Step);
   };
 
-  const goBack = () => {
-    setStepError("");
-    if (step === 1) {
-      window.location.href = `/libro/${bookId}`;
-      return;
-    }
-    setStep((s) => (s - 1) as Step);
-  };
-
-  const submit = () => {
+  const submit = async () => {
     if (!file) {
       setFileError("Falta subir tu trabajo. ¡Elige un archivo para continuar!");
       return;
     }
     setSubmitting(true);
+    setStepError("");
+
     const code = `LL-${bookId.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase().slice(-6)}`;
     const payload = {
       bookId,
@@ -101,17 +113,45 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookA
       dni: dniLimpio,
       fileName: file.name,
     };
-    sessionStorage.setItem("loqueleo-inscripcion", JSON.stringify(payload));
-    saveParticipation({
-      dni: dniLimpio,
-      code,
-      bookId,
-      bookTitle,
-      colegio,
-      grado: bookGrade,
-      fileName: file.name,
-    });
-    window.location.href = `/libro/${bookId}/confirmacion`;
+
+    try {
+      const uploaded = await uploadParticipationFile(file, bookId, dniLimpio);
+      await saveParticipation({
+        dni: dniLimpio,
+        code,
+        bookId,
+        bookTitle,
+        colegio,
+        grado: bookGrade,
+        departamento,
+        ciudad,
+        distrito,
+        fileName: uploaded.fileName,
+        fileUrl: uploaded.fileUrl,
+        s3Key: uploaded.s3Key,
+      });
+      sessionStorage.setItem(
+        "loqueleo-inscripcion",
+        JSON.stringify({ ...payload, fileName: uploaded.fileName }),
+      );
+      window.location.href = `/libro/${bookId}/confirmacion`;
+    } catch (error) {
+      setStepError(
+        error instanceof Error
+          ? error.message
+          : "No pudimos registrar tu participación. Revisa tu DNI o corrige tu archivo en Ayuda.",
+      );
+      setSubmitting(false);
+    }
+  };
+
+  const goBack = () => {
+    setStepError("");
+    if (step === 1) {
+      window.location.href = `/libro/${bookId}`;
+      return;
+    }
+    setStep((s) => (s - 1) as Step);
   };
 
   return (
@@ -249,6 +289,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookA
               <button
                 type="button"
                 onClick={goNext}
+                disabled={checkingDni}
                 className={[
                   "wizard-btn wizard-btn--primary",
                   step >= 3 ? "wizard-btn--hidden" : "",
@@ -257,7 +298,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, bookA
                 aria-hidden={step >= 3}
                 tabIndex={step >= 3 ? -1 : 0}
               >
-                Siguiente
+                {checkingDni ? "Verificando DNI…" : "Siguiente"}
               </button>
               <button
                 type="button"

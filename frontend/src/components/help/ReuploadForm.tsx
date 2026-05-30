@@ -1,6 +1,7 @@
 import { useState } from "react";
 import FileDropzone from "../flow/FileDropzone";
 import { reuploadParticipationFile } from "../../lib/participations";
+import { uploadParticipationFile } from "../../lib/uploads";
 import type { ParticipationRecord } from "../../data/participations";
 
 interface Props {
@@ -14,7 +15,7 @@ export default function ReuploadForm({ record, onSuccess }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const submit = () => {
+  const submit = async () => {
     if (!file) {
       setFileError("Elige el archivo corregido.");
       return;
@@ -23,15 +24,28 @@ export default function ReuploadForm({ record, onSuccess }: Props) {
     setSubmitting(true);
     setFormError("");
 
-    const updated = reuploadParticipationFile(record.dni, file.name);
-    if (!updated) {
-      setFormError("No se pudo guardar. Intenta otra vez.");
-      setSubmitting(false);
-      return;
-    }
+    try {
+      const uploaded = await uploadParticipationFile(file, record.bookId, record.dni);
+      const updated = await reuploadParticipationFile(
+        record.dni,
+        uploaded.fileName,
+        uploaded.fileUrl,
+        uploaded.s3Key,
+      );
+      if (!updated) {
+        setFormError("No se pudo guardar. Intenta otra vez.");
+        setSubmitting(false);
+        return;
+      }
 
-    onSuccess(updated);
-    setSubmitting(false);
+      onSuccess(updated);
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : "No se pudo guardar. Intenta otra vez.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

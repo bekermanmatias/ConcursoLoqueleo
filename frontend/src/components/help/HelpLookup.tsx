@@ -19,27 +19,37 @@ export default function HelpLookup() {
   const [reuploadDone, setReuploadDone] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dniLimpio = dni.replace(/\D/g, "");
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setError("");
     setSearched(true);
+    setLoading(true);
 
     if (dniLimpio.length !== 8) {
       setResult(null);
       setError("Escribe un DNI de 8 números.");
+      setLoading(false);
       return;
     }
 
-    const found = getParticipationByDni(dniLimpio);
-    setResult(found);
-    setReuploadDone(false);
+    try {
+      const found = await getParticipationByDni(dniLimpio);
+      setResult(found);
+      setReuploadDone(false);
 
-    if (!found) {
-      setError(
-        "No encontramos tu DNI. Revísalo o pregunta a tu profe si ya enviaste tu trabajo.",
-      );
+      if (!found) {
+        setError(
+          "No encontramos tu DNI. Revísalo o pregunta a tu profe si ya enviaste tu trabajo.",
+        );
+      }
+    } catch {
+      setResult(null);
+      setError("No pudimos consultar ahora. Intenta en unos minutos.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,8 +83,8 @@ export default function HelpLookup() {
               setError("");
             }}
           />
-          <button type="submit" className="help-search-btn btn-primary">
-            Buscar
+          <button type="submit" className="help-search-btn btn-primary" disabled={loading}>
+            {loading ? "Buscando…" : "Buscar"}
           </button>
         </div>
       </form>

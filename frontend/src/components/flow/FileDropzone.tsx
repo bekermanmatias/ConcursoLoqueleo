@@ -1,12 +1,27 @@
 import { useCallback, useRef, useState } from "react";
 
-const MAX_MB = 50;
-const ACCEPT = ".pdf,.mp4,.mov,.mp3,.jpg,.jpeg,.png";
+const PDF_MAX_MB = 10;
+const VIDEO_MAX_MB = 250;
+const ACCEPT = ".pdf,.mp4,.mov";
 
 interface Props {
   onFile: (file: File | null) => void;
   onValidationError?: (message: string) => void;
   error?: string;
+}
+
+function maxBytesForFile(f: File): number {
+  const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+  if (ext === "pdf") return PDF_MAX_MB * 1024 * 1024;
+  if (["mp4", "mov"].includes(ext)) return VIDEO_MAX_MB * 1024 * 1024;
+  return PDF_MAX_MB * 1024 * 1024;
+}
+
+function maxLabelForFile(f: File): string {
+  const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+  if (ext === "pdf") return `${PDF_MAX_MB} MB`;
+  if (["mp4", "mov"].includes(ext)) return `${VIDEO_MAX_MB} MB`;
+  return `${PDF_MAX_MB} MB`;
 }
 
 export default function FileDropzone({ onFile, onValidationError, error }: Props) {
@@ -17,12 +32,13 @@ export default function FileDropzone({ onFile, onValidationError, error }: Props
 
   const validate = (f: File): string | null => {
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    const allowed = ["pdf", "mp4", "mov", "mp3", "jpg", "jpeg", "png"];
+    const allowed = ["pdf", "mp4", "mov"];
     if (!allowed.includes(ext)) {
-      return "Ese formato no sirve. Sube un PDF o un video.";
+      return "Ese formato no sirve. Sube un PDF o un video MP4/MOV.";
     }
-    if (f.size > MAX_MB * 1024 * 1024) {
-      return `Tu archivo es muy pesado. El máximo es ${MAX_MB} MB.`;
+    const limit = maxBytesForFile(f);
+    if (f.size > limit) {
+      return `Tu archivo es muy pesado. El máximo para este formato es ${maxLabelForFile(f)}.`;
     }
     return null;
   };

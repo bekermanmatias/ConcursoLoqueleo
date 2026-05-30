@@ -1,0 +1,54 @@
+{
+  "family": "loqueleo-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/loqueleo-api-task-role",
+  "containerDefinitions": [
+    {
+      "name": "loqueleo-api",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/loqueleo-api:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "STORAGE_MODE", "value": "s3" },
+        { "name": "AWS_REGION", "value": "REGION" },
+        { "name": "APP_DOMAIN", "value": "concursope.loqueleo.com" },
+        { "name": "CORS_ORIGIN", "value": "https://concursope.loqueleo.com" },
+        { "name": "S3_UPLOAD_BUCKET", "value": "loqueleo-entregables-prod" },
+        { "name": "S3_UPLOAD_PREFIX", "value": "entregables" },
+        { "name": "S3_PUBLIC_URL_BASE", "value": "https://entregables.concursope.loqueleo.com" }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:loqueleo/database-url"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/loqueleo-api",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
