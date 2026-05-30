@@ -1,8 +1,9 @@
+import { randomBytes } from "node:crypto";
 import { pool } from "../db/pool.js";
+import { config } from "../config.js";
 import {
   BOOKS_BY_SLUG,
   buildArchivoUrl,
-  gradoLabel,
   inferTipoArchivo,
   parseGradoLabel,
   slugFromBookTitle,
@@ -16,16 +17,17 @@ import {
 
 const SELECT_JOIN = `
   SELECT
-    p.dni,
-    t.id AS trabajo_id,
-    r.titulo_libro,
+    p.dni_estudiante AS dni,
+    p.concursante,
+    t.codigo_entrega,
+    r.nombre_obra,
     c.nombre AS colegio,
     g.nombre AS grado_nombre,
     g.nivel AS grado_nivel,
     u.departamento,
-    u.ciudad,
+    u.provincia,
     u.distrito,
-    t.archivo_url,
+    t.trabajo_enlace,
     t.tipo_archivo,
     t.estado,
     t.fecha_envio
@@ -39,30 +41,36 @@ const SELECT_JOIN = `
 
 interface ParticipationRow {
   dni: string;
-  trabajo_id: number;
-  titulo_libro: string;
+  concursante: string;
+  codigo_entrega: string;
+  nombre_obra: string;
   colegio: string;
   grado_nombre: string;
   grado_nivel: string;
   departamento: string | null;
-  ciudad: string | null;
+  provincia: string | null;
   distrito: string | null;
-  archivo_url: string;
+  trabajo_enlace: string;
   tipo_archivo: "pdf" | "mp4" | "imagen";
   estado: "recibido" | "en_revision" | "finalista" | "ganador";
   fecha_envio: Date;
   book_slug?: string | null;
 }
 
+function generateCodigoEntrega(): string {
+  const suffix = randomBytes(4).toString("hex").toUpperCase();
+  return `${config.codigoConcurso}-${suffix}`;
+}
+
 export async function findByDni(dni: string): Promise<ParticipationRecord | null> {
   const result = await pool.query<ParticipationRow>(
-    `${SELECT_JOIN} WHERE p.dni = $1`,
+    `${SELECT_JOIN} WHERE p.dni_estudiante = $1`,
     [dni],
   );
   if (!result.rows[0]) return null;
   return mapRow({
     ...result.rows[0],
-    book_slug: slugFromBookTitle(result.rows[0].titulo_libro),
+    book_slug: slugFromBookTitle(result.rows[0].nombre_obra),
   });
 }
 
@@ -74,35 +82,41 @@ export async function isDniBlocked(dni: string): Promise<boolean> {
 
 async function findOrCreateUbicacion(
   departamento: string,
-  ciudad: string,
+  provincia: string,
   distrito: string,
 ): Promise<number> {
   const existing = await pool.query<{ id: number }>(
     `SELECT id FROM ubicaciones
-     WHERE departamento = $1 AND ciudad = $2 AND distrito = $3`,
-    [departamento, ciudad, distrito],
+     WHERE departamento = $1 AND provincia = $2 AND distrito = $3`,
+    [departamento, provincia, distrito],
   );
   if (existing.rows[0]) return existing.rows[0].id;
 
   const inserted = await pool.query<{ id: number }>(
-    `INSERT INTO ubicaciones (departamento, ciudad, distrito)
+    `INSERT INTO ubicaciones (departamento, provincia, distrito)
      VALUES ($1, $2, $3)
      RETURNING id`,
-    [departamento, ciudad, distrito],
+    [departamento, provincia, distrito],
   );
   return inserted.rows[0].id;
 }
 
-async function findOrCreateColegio(nombre: string, ubicacionId: number): Promise<number> {
-  const existing = await pool.query<{ id: number }>(
-    `SELECT id FROM colegios WHERE nombre = $1 AND ubicacion_id = $2`,
-    [nombre, ubicacionId],
+async function findOrCreateColegio(
+  codigoColegio: string,
+  nombre: string,
+  ubicacionId: number,
+): Promise<number> {
+  const byCodigo = await pool.query<{ id: number }>(
+    `SELECT id FROM colegios WHERE codigo_colegio = $1`,
+    [codigoColegio],
   );
-  if (existing.rows[0]) return existing.rows[0].id;
+  if (byCodigo.rows[0]) return byCodigo.rows[0].id;
 
   const inserted = await pool.query<{ id: number }>(
-    `INSERT INTO colegios (nombre, ubicacion_id) VALUES ($1, $2) RETURNING id`,
-    [nombre, ubicacionId],
+    `INSERT INTO colegios (codigo_colegio, nombre, ubicacion_id)
+     VALUES ($1, $2, $3)
+     RETURNING id`,
+    [codigoColegio, nombre, ubicacionId],
   );
   return inserted.rows[0].id;
 }
@@ -122,7 +136,7 @@ async function findRetoId(bookId: string, bookTitle: string, gradoId: number): P
   const title = meta?.title ?? bookTitle;
 
   const result = await pool.query<{ id: number }>(
-    `SELECT id FROM retos WHERE titulo_libro = $1 AND grado_id = $2`,
+    `SELECT id FROM retos WHERE nombre_obra = $1 AND grado_id = $2`,
     [title, gradoId],
   );
   if (!result.rows[0]) throw new Error("RETO_NOT_FOUND");
@@ -140,43 +154,84 @@ export async function createParticipation(
   const gradoId = await findGradoId(input.grado);
   const retoId = await findRetoId(input.bookId, input.bookTitle, gradoId);
 
-  const ubicacionId = input.departamento && input.ciudad && input.distrito
-    ? await findOrCreateUbicacion(input.departamento, input.ciudad, input.distrito)
-    : (await pool.query<{ id: number }>(`SELECT id FROM ubicaciones LIMIT 1`)).rows[0]?.id;
+  if (!input.departamento || !input.provincia || !input.distrito) {
+    throw new Error("UBICACION_REQUIRED");
+  }
 
-  if (!ubicacionId) throw new Error("UBICACION_REQUIRED");
+  const ubicacionId = await findOrCreateUbicacion(
+    input.departamento,
+    input.provincia,
+    input.distrito,
+  );
 
-  const colegioId = await findOrCreateColegio(input.colegio, ubicacionId);
-  const archivoUrl = buildArchivoUrl(input.fileName, input.fileUrl, input.s3Key);
+  const colegioId = await findOrCreateColegio(
+    input.codigoColegio,
+    input.colegio,
+    ubicacionId,
+  );
+
+  const trabajoEnlace = buildArchivoUrl(input.fileName, input.fileUrl, input.s3Key);
   const tipoArchivo = inferTipoArchivo(input.fileName);
-  const nombreCompleto = input.nombreCompleto?.trim() || `Estudiante ${input.dni}`;
-  const edad = input.edad ?? 10;
+  const codigoEntrega = generateCodigoEntrega();
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
     const participante = await client.query<{ id: number }>(
-      `INSERT INTO participantes (dni, nombre_completo, edad, colegio_id, grado_id)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (dni) DO UPDATE SET
-         nombre_completo = EXCLUDED.nombre_completo,
-         colegio_id = EXCLUDED.colegio_id,
-         grado_id = EXCLUDED.grado_id
-       RETURNING id`,
-      [input.dni, nombreCompleto, edad, colegioId, gradoId],
+      `INSERT INTO participantes (
+        dni_estudiante, concursante, sexo, edad,
+        apoderado, dni_apoderado, telefono_apoderado, celular_apoderado,
+        docente, email_docente, colegio_id, grado_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      ON CONFLICT (dni_estudiante) DO UPDATE SET
+        concursante = EXCLUDED.concursante,
+        sexo = EXCLUDED.sexo,
+        edad = EXCLUDED.edad,
+        apoderado = EXCLUDED.apoderado,
+        dni_apoderado = EXCLUDED.dni_apoderado,
+        telefono_apoderado = EXCLUDED.telefono_apoderado,
+        celular_apoderado = EXCLUDED.celular_apoderado,
+        docente = EXCLUDED.docente,
+        email_docente = EXCLUDED.email_docente,
+        colegio_id = EXCLUDED.colegio_id,
+        grado_id = EXCLUDED.grado_id
+      RETURNING id`,
+      [
+        input.dni,
+        input.concursante,
+        input.sexo,
+        input.edad,
+        input.apoderado,
+        input.dniApoderado,
+        input.telefonoApoderado ?? null,
+        input.celularApoderado,
+        input.docente,
+        input.emailDocente,
+        colegioId,
+        gradoId,
+      ],
     );
 
     await client.query(
-      `INSERT INTO trabajos (participante_id, reto_id, archivo_url, tipo_archivo, estado)
-       VALUES ($1, $2, $3, $4, 'recibido')
-       ON CONFLICT (participante_id) DO UPDATE SET
-         reto_id = EXCLUDED.reto_id,
-         archivo_url = EXCLUDED.archivo_url,
-         tipo_archivo = EXCLUDED.tipo_archivo,
-         estado = 'recibido',
-         fecha_envio = NOW()`,
-      [participante.rows[0].id, retoId, archivoUrl, tipoArchivo],
+      `INSERT INTO trabajos (
+        codigo_concurso, codigo_entrega, participante_id, reto_id,
+        trabajo_enlace, tipo_archivo, estado
+      ) VALUES ($1, $2, $3, $4, $5, $6, 'recibido')
+      ON CONFLICT (participante_id) DO UPDATE SET
+        reto_id = EXCLUDED.reto_id,
+        trabajo_enlace = EXCLUDED.trabajo_enlace,
+        tipo_archivo = EXCLUDED.tipo_archivo,
+        estado = 'recibido',
+        fecha_envio = NOW()`,
+      [
+        config.codigoConcurso,
+        codigoEntrega,
+        participante.rows[0].id,
+        retoId,
+        trabajoEnlace,
+        tipoArchivo,
+      ],
     );
 
     await client.query("COMMIT");
@@ -193,12 +248,27 @@ export async function createParticipation(
 }
 
 export async function reuploadFile(
-  _dni: string,
-  _fileName: string,
-  _fileUrl?: string,
-  _s3Key?: string,
+  dni: string,
+  fileName: string,
+  fileUrl?: string,
+  s3Key?: string,
 ): Promise<ParticipationRecord | null> {
-  return null;
-}
+  const existing = await findByDni(dni);
+  if (!existing || !canReupload(existing)) return null;
 
-export { gradoLabel };
+  const trabajoEnlace = buildArchivoUrl(fileName, fileUrl, s3Key);
+  const tipoArchivo = inferTipoArchivo(fileName);
+
+  await pool.query(
+    `UPDATE trabajos t SET
+      trabajo_enlace = $2,
+      tipo_archivo = $3,
+      estado = 'recibido',
+      fecha_envio = NOW()
+    FROM participantes p
+    WHERE t.participante_id = p.id AND p.dni_estudiante = $1`,
+    [dni, trabajoEnlace, tipoArchivo],
+  );
+
+  return findByDni(dni);
+}

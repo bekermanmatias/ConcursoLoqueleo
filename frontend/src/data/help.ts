@@ -18,7 +18,7 @@ export const helpConsultTitle = "Consultar mi participación";
 export const helpConsultDescription =
   "Escribe tu DNI para ver tu entrega, tu constancia o subir un archivo corregido.";
 
-export const helpConsultPath = "/ayuda/consultar";
+export const helpConsultPath = "/ayuda/consultar/";
 
 export const helpScenarios: HelpScenario[] = [
   {

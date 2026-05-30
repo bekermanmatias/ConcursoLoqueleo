@@ -98,14 +98,6 @@
     @apply text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ink-900 tracking-tight leading-[1.1];
   }
 
-  .retos-notice {
-    @apply rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-ink-700;
-  }
-
-  .retos-notice strong {
-    @apply font-semibold text-ink-900;
-  }
-
   .nav-link--active {
     color: var(--color-brand-red);
   }

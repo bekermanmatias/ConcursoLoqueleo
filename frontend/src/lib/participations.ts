@@ -1,17 +1,25 @@
 import type { ParticipationRecord } from "../data/participations";
-import type { Grado } from "../data/locations";
-import { canReuploadParticipation } from "../data/participations";
+import type { Grado, Sexo } from "../data/locations";
 
 export interface SaveParticipationInput {
   dni: string;
-  code: string;
   bookId: string;
   bookTitle: string;
   colegio: string;
+  codigoColegio: string;
   grado: Grado;
   departamento?: string;
-  ciudad?: string;
+  provincia?: string;
   distrito?: string;
+  concursante: string;
+  sexo: Sexo;
+  edad: number;
+  apoderado: string;
+  dniApoderado: string;
+  telefonoApoderado?: string;
+  celularApoderado: string;
+  docente: string;
+  emailDocente: string;
   fileName: string;
   fileUrl?: string;
   s3Key?: string;
@@ -90,4 +98,4 @@ export function formatParticipationDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-export { canReuploadParticipation };
+export { canReuploadParticipation } from "../data/participations";

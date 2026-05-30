@@ -41,30 +41,73 @@ participationsRouter.get("/:dni", async (req, res) => {
 
 participationsRouter.post("/", async (req, res) => {
   const dni = cleanDni(String(req.body.dni ?? ""));
+  const dniApoderado = cleanDni(String(req.body.dniApoderado ?? ""));
+
   if (!dni) {
-    res.status(400).json({ error: "DNI inválido" });
+    res.status(400).json({ error: "DNI del estudiante inválido" });
+    return;
+  }
+  if (!dniApoderado) {
+    res.status(400).json({ error: "DNI del apoderado inválido" });
     return;
   }
 
-  const required = ["code", "bookId", "bookTitle", "colegio", "grado", "fileName"] as const;
+  const required = [
+    "bookId",
+    "bookTitle",
+    "colegio",
+    "codigoColegio",
+    "grado",
+    "concursante",
+    "sexo",
+    "edad",
+    "apoderado",
+    "celularApoderado",
+    "docente",
+    "emailDocente",
+    "fileName",
+  ] as const;
+
   for (const field of required) {
-    if (!req.body[field]) {
+    if (req.body[field] === undefined || req.body[field] === "") {
       res.status(400).json({ error: `Falta ${field}` });
       return;
     }
   }
 
+  if (!["M", "F"].includes(String(req.body.sexo))) {
+    res.status(400).json({ error: "Sexo inválido" });
+    return;
+  }
+
+  const edad = Number(req.body.edad);
+  if (!Number.isInteger(edad) || edad < 5 || edad > 20) {
+    res.status(400).json({ error: "Edad inválida" });
+    return;
+  }
+
   try {
     const record = await createParticipation({
       dni,
-      code: req.body.code,
       bookId: req.body.bookId,
       bookTitle: req.body.bookTitle,
       colegio: req.body.colegio,
+      codigoColegio: String(req.body.codigoColegio),
       grado: req.body.grado,
       departamento: req.body.departamento,
-      ciudad: req.body.ciudad,
+      provincia: req.body.provincia ?? req.body.ciudad,
       distrito: req.body.distrito,
+      concursante: String(req.body.concursante).trim(),
+      sexo: req.body.sexo,
+      edad,
+      apoderado: String(req.body.apoderado).trim(),
+      dniApoderado,
+      telefonoApoderado: req.body.telefonoApoderado
+        ? String(req.body.telefonoApoderado)
+        : undefined,
+      celularApoderado: String(req.body.celularApoderado),
+      docente: String(req.body.docente).trim(),
+      emailDocente: String(req.body.emailDocente).trim(),
       fileName: req.body.fileName,
       fileUrl: req.body.fileUrl,
       s3Key: req.body.s3Key,

@@ -33,6 +33,8 @@ export const config = {
     pdfMaxBytes: Number(process.env.MAX_PDF_BYTES ?? 10 * MB),
     videoMaxBytes: Number(process.env.MAX_VIDEO_BYTES ?? 250 * MB),
   },
+  /** Código general del certamen (trabajos.codigo_concurso). */
+  codigoConcurso: process.env.CODIGO_CONCURSO ?? "LQL2026",
 };
 
 /** Valida configuración mínima para ECS + RDS + S3 en producción. */

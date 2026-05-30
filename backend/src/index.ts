@@ -10,7 +10,22 @@ assertProductionConfig();
 
 const app = express();
 
-app.use(cors({ origin: config.corsOrigin }));
+const devOrigins = ["http://localhost:8080", "http://localhost:4321"];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const allowed =
+        origin === config.corsOrigin ||
+        (config.nodeEnv !== "production" && devOrigins.includes(origin));
+      callback(null, allowed);
+    },
+  }),
+);
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", async (_req, res) => {

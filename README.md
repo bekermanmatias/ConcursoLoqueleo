@@ -26,6 +26,95 @@ Monorepo alineado con la arquitectura AWS de Santillana: **ECS + ECR** (backend)
 
 Capacidad: ~10.000 inscripciones. Límites de archivo según TI: **PDF 10 MB**, **video 250 MB**.
 
+## Pruebas en local con Docker (inicio rápido)
+
+**Requisitos:** Docker Desktop instalado y en ejecución.
+
+### 1. Levantar todo
+
+Desde la raíz del repo:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+La primera vez tarda unos minutos (descarga imágenes y construye frontend + backend).
+
+Para dejarlo en segundo plano:
+
+```bash
+docker compose up --build -d
+```
+
+### 2. Acceder
+
+| Qué | URL |
+|-----|-----|
+| **Sitio web** | http://localhost **o** http://localhost:8080 |
+| **Inicio del concurso** | http://localhost/ |
+| **Ejemplo libro** | http://localhost/libro/tusuj-6/ |
+| **Consultar participación (Ayuda)** | http://localhost/ayuda/consultar/ |
+| **API (health)** | http://localhost:3000/api/health |
+| **API vía nginx** | http://localhost/api/health |
+
+### 3. Probar el flujo
+
+1. Entra a un libro, por ejemplo: http://localhost:8080/libro/tusuj-6/
+2. Pulsa participar y completa el formulario (5 pasos).
+3. En Ayuda, busca un DNI de demo (tabla más abajo).
+
+### 4. Comandos útiles
+
+```bash
+# Ver logs en vivo
+docker compose logs -f
+
+# Detener
+docker compose down
+
+# Resetear base de datos (tras cambio de esquema)
+docker compose down -v
+docker compose up --build
+```
+
+### 5. Desarrollo del frontend en el IDE (error tsconfig)
+
+Si VS Code marca error en `frontend/tsconfig.json` (`astro/tsconfigs/strict`), instala dependencias **dentro de `frontend/`**:
+
+```bash
+cd frontend
+npm install
+```
+
+El editor necesita `frontend/node_modules` para resolver la config de Astro. Docker no instala eso en tu máquina; solo dentro del contenedor.
+
+### 6. Desarrollo sin reconstruir Docker (hot reload)
+
+Terminal 1 — solo Postgres:
+
+```bash
+docker compose up db -d
+```
+
+Terminal 2 — backend:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Terminal 3 — frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Sitio con recarga: http://localhost:4321 (proxy `/api` → backend en `:3000`).
+
 ## Base de datos (esquema oficial)
 
 El modelo relacional incluye: `usuarios_internos`, `ubicaciones`, `colegios`, `grados`, `retos`, `participantes`, `trabajos`, `evaluaciones`.

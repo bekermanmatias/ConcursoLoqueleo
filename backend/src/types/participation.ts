@@ -1,7 +1,7 @@
 export type EstadoTrabajo = "recibido" | "en_revision" | "finalista" | "ganador";
 export type TipoArchivo = "pdf" | "mp4" | "imagen";
+export type Sexo = "M" | "F";
 
-/** Respuesta de la API pública (compatible con el frontend actual). */
 export interface ParticipationRecord {
   dni: string;
   code: string;
@@ -9,12 +9,14 @@ export interface ParticipationRecord {
   bookTitle: string;
   colegio: string;
   grado: string;
+  concursante?: string;
   departamento?: string | null;
+  provincia?: string | null;
+  /** @deprecated Alias de provincia para compatibilidad */
   ciudad?: string | null;
   distrito?: string | null;
   fileName: string;
   fileUrl?: string | null;
-  s3Key?: string | null;
   fileStatus: "ok" | "pendiente";
   fileStatusDetail: string;
   estado: EstadoTrabajo;
@@ -24,33 +26,41 @@ export interface ParticipationRecord {
 
 export interface CreateParticipationInput {
   dni: string;
-  code: string;
   bookId: string;
   bookTitle: string;
   colegio: string;
+  codigoColegio: string;
   grado: string;
   departamento?: string;
-  ciudad?: string;
+  provincia?: string;
   distrito?: string;
+  concursante: string;
+  sexo: Sexo;
+  edad: number;
+  apoderado: string;
+  dniApoderado: string;
+  telefonoApoderado?: string;
+  celularApoderado: string;
+  docente: string;
+  emailDocente: string;
   fileName: string;
   fileUrl?: string;
   s3Key?: string;
-  nombreCompleto?: string;
-  edad?: number;
 }
 
 interface ParticipationRow {
   dni: string;
-  trabajo_id: number;
+  codigo_entrega: string;
+  concursante: string;
   book_slug: string | null;
-  titulo_libro: string;
+  nombre_obra: string;
   colegio: string;
   grado_nombre: string;
   grado_nivel: string;
   departamento: string | null;
-  ciudad: string | null;
+  provincia: string | null;
   distrito: string | null;
-  archivo_url: string;
+  trabajo_enlace: string;
   tipo_archivo: TipoArchivo;
   estado: EstadoTrabajo;
   fecha_envio: Date;
@@ -58,21 +68,22 @@ interface ParticipationRow {
 
 export function mapRow(row: ParticipationRow): ParticipationRecord {
   const grado = `${row.grado_nombre} ${row.grado_nivel}`;
-  const fileName = row.archivo_url.split("/").pop() ?? row.archivo_url;
+  const fileName = row.trabajo_enlace.split("/").pop() ?? row.trabajo_enlace;
 
   return {
     dni: row.dni,
-    code: `LL-${String(row.trabajo_id).padStart(6, "0")}`,
-    bookId: row.book_slug ?? row.titulo_libro,
-    bookTitle: row.titulo_libro,
+    code: row.codigo_entrega,
+    concursante: row.concursante,
+    bookId: row.book_slug ?? row.nombre_obra,
+    bookTitle: row.nombre_obra,
     colegio: row.colegio,
     grado,
     departamento: row.departamento,
-    ciudad: row.ciudad,
+    provincia: row.provincia,
+    ciudad: row.provincia,
     distrito: row.distrito,
     fileName,
-    fileUrl: row.archivo_url.startsWith("http") ? row.archivo_url : null,
-    s3Key: row.archivo_url.startsWith("http") ? row.archivo_url : null,
+    fileUrl: row.trabajo_enlace.startsWith("http") ? row.trabajo_enlace : null,
     fileStatus: "ok",
     fileStatusDetail: statusDetail(row.estado, row.tipo_archivo),
     estado: row.estado,

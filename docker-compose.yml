@@ -27,8 +27,9 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER:-loqueleo}:${POSTGRES_PASSWORD:-loqueleo}@db:5432/${POSTGRES_DB:-loqueleo}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
       APP_DOMAIN: ${APP_DOMAIN:-concursope.loqueleo.com}
+      CODIGO_CONCURSO: ${CODIGO_CONCURSO:-LQL2026}
       STORAGE_MODE: ${STORAGE_MODE:-local}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       S3_UPLOAD_BUCKET: ${S3_UPLOAD_BUCKET:-}
@@ -49,7 +50,8 @@ services:
     depends_on:
       - backend
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-80}:80"
+      - "8080:80"
 
 volumes:
   postgres_data:

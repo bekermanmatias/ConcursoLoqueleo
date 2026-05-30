@@ -65,7 +65,7 @@ export default function ConfirmationView() {
         <p className="text-sm text-gray-500 pt-2">
           Guarda tu código. También puedes consultar tu estado o reimprimir tu constancia en{" "}
           <a
-            href="/ayuda/consultar"
+            href="/ayuda/consultar/"
             className="font-semibold text-[color:var(--color-brand-red)] hover:underline"
           >
             Consultar mi participación

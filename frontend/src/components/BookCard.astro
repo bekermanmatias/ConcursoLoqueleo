@@ -9,7 +9,7 @@ interface Props {
 
 const { book } = Astro.props;
 const { accent } = ageUiStyles[book.age];
-const bookUrl = `/libro/${book.id}`;
+const bookUrl = `/libro/${book.id}/`;
 const gradeLabel = formatGradeLabel(book.grade);
 ---
 
