@@ -1,0 +1,1 @@
+ALTER TABLE participantes DROP COLUMN IF EXISTS edad;

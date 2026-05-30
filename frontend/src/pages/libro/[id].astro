@@ -134,19 +134,15 @@ const gradeLabel = formatGradeLabel(book.grade);
           </div>
         )}
 
-        <p class="book-detail-note mt-6 text-sm text-gray-600 leading-relaxed">
-          Este reto es para <strong class="font-semibold text-ink-800">{gradeLabel}</strong>.
-          Cada estudiante puede participar en un solo reto del concurso.
-        </p>
-
-        <p class="book-detail-note mt-3 mb-5 text-sm text-gray-600 leading-relaxed">
-          {book.participateNote}
-        </p>
-
-        <div class="book-detail-actions">
-          <a href={participarUrl} class="btn-primary book-detail-btn">
-            Participar ahora
-          </a>
+        <div class="book-detail-cta">
+          <p class="book-detail-cta-text">
+            {book.participateNote}
+          </p>
+          <div class="book-detail-actions">
+            <a href={participarUrl} class="btn-primary book-detail-btn">
+              Participar ahora
+            </a>
+          </div>
         </div>
       </div>
       </div>

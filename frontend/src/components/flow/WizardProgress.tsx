@@ -19,24 +19,24 @@ const stepConfig: Record<Step, StepConfig> = {
   },
   2: {
     percent: 32,
-    title: "¿En qué colegio",
-    titleAccent: "estudias?",
+    title: "¿Desde qué colegio",
+    titleAccent: "participas?",
     description:
-      "Elige tu colegio. El grado ya está fijado por el reto del libro que elegiste.",
+      "Elige tu colegio e indica el nombre y apellido del docente a cargo de tu aula.",
   },
   3: {
     percent: 50,
-    title: "Datos del",
-    titleAccent: "estudiante",
+    title: "¿Cuáles son tus",
+    titleAccent: "datos?",
     description:
-      "Escribe tu nombre completo, DNI, sexo y edad. Un solo reto por estudiante.",
+      "Cuéntanos tu nombre y apellido, DNI y género tal como figuran en tu documento.",
   },
   4: {
     percent: 68,
-    title: "Apoderado",
-    titleAccent: "y docente",
+    title: "¿Quién es tu",
+    titleAccent: "apoderado?",
     description:
-      "Datos de contacto del apoderado y del docente a cargo en tu colegio.",
+      "Indica el nombre y apellido, DNI y teléfono de contacto de tu madre, padre o tutor.",
   },
   5: {
     percent: 88,

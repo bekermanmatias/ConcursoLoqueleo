@@ -68,7 +68,6 @@ CREATE TABLE participantes (
   dni_estudiante VARCHAR(8) UNIQUE NOT NULL,
   concursante VARCHAR(255) NOT NULL,
   sexo sexo NOT NULL,
-  edad INT NOT NULL,
   apoderado VARCHAR(255) NOT NULL,
   dni_apoderado VARCHAR(8) NOT NULL,
   telefono_apoderado VARCHAR(32),

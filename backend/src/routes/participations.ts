@@ -60,7 +60,6 @@ participationsRouter.post("/", async (req, res) => {
     "grado",
     "concursante",
     "sexo",
-    "edad",
     "apoderado",
     "celularApoderado",
     "docente",
@@ -80,12 +79,6 @@ participationsRouter.post("/", async (req, res) => {
     return;
   }
 
-  const edad = Number(req.body.edad);
-  if (!Number.isInteger(edad) || edad < 5 || edad > 20) {
-    res.status(400).json({ error: "Edad inválida" });
-    return;
-  }
-
   try {
     const record = await createParticipation({
       dni,
@@ -99,7 +92,6 @@ participationsRouter.post("/", async (req, res) => {
       distrito: req.body.distrito,
       concursante: String(req.body.concursante).trim(),
       sexo: req.body.sexo,
-      edad,
       apoderado: String(req.body.apoderado).trim(),
       dniApoderado,
       telefonoApoderado: req.body.telefonoApoderado

@@ -49,6 +49,9 @@ export const ageUiStyles: Record<Exclude<AgeKey, "todo">, { accent: string }> = 
   "+14": { accent: "#db3f52" },
 };
 
+export const participateNote =
+  "Al participar te pediremos ubicación, colegio, datos de tu docente, DNI, datos de tu apoderado y el archivo de tu trabajo. El formulario te tomará unos minutos; te recomendamos tener todo a mano.";
+
 export const books: Book[] = [
   {
     id: "tusuj-6",
@@ -71,8 +74,7 @@ export const books: Book[] = [
       "Incluye tu nombre, grado y colegio en el archivo o en el formulario de envío",
       "Tu colegio debe estar inscrito en Loqueleo",
     ],
-    participateNote:
-      "Al participar te pediremos ubicación, colegio, grado, DNI y el archivo de tu trabajo. El formulario toma unos minutos si ya tienes todo a la mano.",
+    participateNote,
     basesPdf: "/pdf/Bases LQL2026 Tusuj.pdf",
   },
   {
@@ -95,8 +97,7 @@ export const books: Book[] = [
       "Firma con tu nombre completo al final",
       "Participa desde un colegio registrado en el concurso",
     ],
-    participateNote:
-      "Necesitarás datos de tu colegio y tu DNI para completar la inscripción. Luego subes la carta en PDF o como imagen.",
+    participateNote,
   },
   {
     id: "revueltos-8",
@@ -118,8 +119,7 @@ export const books: Book[] = [
       "Identifícate con nombre y colegio al empezar",
       "Colegio inscrito en Soy Loqueleo 2026",
     ],
-    participateNote:
-      "El registro pide departamento, ciudad, distrito, colegio, grado y DNI. El archivo puede ser audio o video según lo que hayas grabado.",
+    participateNote,
   },
   {
     id: "gallinas-8",
@@ -141,8 +141,7 @@ export const books: Book[] = [
       "Al pie, tu nombre y sección o grado",
       "Desde colegio registrado en Loqueleo",
     ],
-    participateNote:
-      "Completa el formulario con tus datos escolares y adjunta la noticia en PDF. Revisa ortografía antes de enviar.",
+    participateNote,
   },
   {
     id: "corazon-misha-10",
@@ -164,8 +163,7 @@ export const books: Book[] = [
       "Tu nombre en una esquina",
       "Colegio participante del concurso",
     ],
-    participateNote:
-      "Guarda el afiche en PDF o imagen y súbelo en el paso final. Antes te pediremos datos de ubicación y colegio.",
+    participateNote,
   },
   {
     id: "comando-espacial-10",
@@ -187,8 +185,7 @@ export const books: Book[] = [
       "Indica tu nombre y grado en el archivo",
       "Colegio registrado en Loqueleo",
     ],
-    participateNote:
-      "Puedes filmar la explicación con el celular. Recuerda: este reto es solo para 6.° de primaria y cada estudiante participa una vez.",
+    participateNote,
   },
   {
     id: "yute-tocuyo-12",
@@ -210,8 +207,7 @@ export const books: Book[] = [
       "Cuídate de copiar párrafos del libro original",
       "Participación válida solo con colegio inscrito",
     ],
-    participateNote:
-      "Exporta tu texto a PDF antes de subirlo. Si trabajas en Word, revisa que no queden comentarios ni marcas de corrección.",
+    participateNote,
   },
   {
     id: "maleta-libertad-12",
@@ -233,8 +229,7 @@ export const books: Book[] = [
       "Texto: máximo tres páginas",
       "Colegio inscrito en el concurso",
     ],
-    participateNote:
-      "Elige el formato con el que te sientas más cómodo. El mismo formulario sirve para texto o video.",
+    participateNote,
   },
   {
     id: "ocho-14",
@@ -256,8 +251,7 @@ export const books: Book[] = [
       "Evita canciones con copyright; mejor voz sola o sonido ambiente suave",
       "Colegio registrado en Loqueleo",
     ],
-    participateNote:
-      "Ideal grabarlo con el celular en vertical. Al inscribirte, verifica que el archivo no pese más de 50 MB.",
+    participateNote,
   },
   {
     id: "levita-14",
@@ -279,8 +273,7 @@ export const books: Book[] = [
       "Tu nombre al final del documento",
       "Desde institución educativa registrada",
     ],
-    participateNote:
-      "Puedes inspirarte en el libro, pero las respuestas deben ser tuyas. Sube el PDF en el último paso del registro.",
+    participateNote,
   },
   {
     id: "sol-14",
@@ -302,7 +295,6 @@ export const books: Book[] = [
       "Incluye tu nombre y colegio",
       "Colegio participante del concurso",
     ],
-    participateNote:
-      "Si ya tienes la reseña en Word, guárdala en PDF. El DNI se usa para evitar inscripciones duplicadas.",
+    participateNote,
   },
 ];

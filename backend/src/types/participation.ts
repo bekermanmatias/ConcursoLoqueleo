@@ -36,7 +36,6 @@ export interface CreateParticipationInput {
   distrito?: string;
   concursante: string;
   sexo: Sexo;
-  edad: number;
   apoderado: string;
   dniApoderado: string;
   telefonoApoderado?: string;

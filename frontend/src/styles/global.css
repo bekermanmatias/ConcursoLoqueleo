@@ -637,6 +637,18 @@
     @apply max-w-lg pt-5 border-t border-gray-200;
   }
 
+  .book-detail-cta {
+    @apply mt-6 max-w-lg border-t border-gray-200 pt-5;
+  }
+
+  .book-detail-cta-text {
+    @apply text-sm text-gray-600 leading-relaxed;
+  }
+
+  .book-detail-cta .book-detail-actions {
+    @apply mt-4;
+  }
+
   .challenge-list-item {
     @apply text-sm text-ink-800 leading-relaxed pl-4 relative;
   }
@@ -713,8 +725,16 @@
     @apply flex-1 min-h-0;
   }
 
+  .wizard-footer {
+    @apply mt-auto shrink-0;
+  }
+
   .wizard-step-error {
-    @apply min-h-[3.5rem] shrink-0 pt-2;
+    @apply shrink-0;
+  }
+
+  .wizard-step-error:not(:empty) {
+    @apply mb-3;
   }
 
   .wizard-step {
@@ -739,6 +759,10 @@
 
   .form-field {
     @apply w-full rounded-full border-2 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 outline-none transition;
+  }
+
+  .form-field::placeholder {
+    @apply font-normal text-gray-400;
   }
 
   .form-field:focus {
@@ -876,17 +900,21 @@
     @apply text-green-700;
   }
 
-  /* Atrás | Siguiente siempre en fila; altura fija entre pasos */
+  /* Atrás | Siguiente siempre en fila; misma altura en ambos */
   .wizard-actions {
     display: flex;
     flex-direction: row;
     align-items: stretch;
     gap: 0.75rem;
     width: 100%;
-    margin-top: auto;
     flex-shrink: 0;
-    padding-top: 2.5rem;
-    min-height: 4.375rem;
+  }
+
+  .wizard-actions > .wizard-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    height: auto;
+    min-height: 3.375rem;
   }
 
   .wizard-actions-forward {
@@ -901,13 +929,11 @@
     inset: 0;
     width: 100%;
     height: 100%;
+    flex: none;
   }
 
   .wizard-btn {
     display: inline-flex;
-    flex: 1 1 0;
-    min-width: 0;
-    height: 3.375rem;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
@@ -942,16 +968,14 @@
   @media (max-width: 639px) {
     .wizard-actions {
       gap: 0.625rem;
-      padding-top: 0.75rem;
-      min-height: 3.75rem;
     }
 
+    .wizard-actions > .wizard-btn,
     .wizard-actions-forward {
       min-height: 3rem;
     }
 
     .wizard-btn {
-      height: 3rem;
       font-size: 0.75rem;
     }
   }

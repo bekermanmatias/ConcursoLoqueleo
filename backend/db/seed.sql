@@ -60,12 +60,12 @@ ON CONFLICT (codigo_colegio) DO NOTHING;
 
 -- Participantes demo (Ayuda)
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo, edad,
+  dni_estudiante, concursante, sexo,
   apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '12345678', 'Ana Demo García', 'F', 7,
+  '12345678', 'Ana Demo García', 'F',
   'Rosa García', '45678901', '999111222', 'Prof. Carmen López', 'clopez@demo.edu.pe',
   c.id, g.id
 FROM colegios c
@@ -87,12 +87,12 @@ WHERE p.dni_estudiante = '12345678'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
 
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo, edad,
+  dni_estudiante, concursante, sexo,
   apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '87654321', 'Luis Demo Torres', 'M', 9,
+  '87654321', 'Luis Demo Torres', 'M',
   'Pedro Torres', '56789012', '999333444', 'Prof. Ana Ruiz', 'aruiz@demo.edu.pe',
   c.id, g.id
 FROM colegios c
@@ -114,12 +114,12 @@ WHERE p.dni_estudiante = '87654321'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
 
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo, edad,
+  dni_estudiante, concursante, sexo,
   apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '11223344', 'María Demo Quispe', 'F', 8,
+  '11223344', 'María Demo Quispe', 'F',
   'Juana Quispe', '67890123', '999555666', 'Prof. Luis Vega', 'lvega@demo.edu.pe',
   c.id, g.id
 FROM colegios c
