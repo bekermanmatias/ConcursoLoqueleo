@@ -37,7 +37,6 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
   const [sexo, setSexo] = useState<Sexo | "">("");
   const [apoderado, setApoderado] = useState("");
   const [dniApoderado, setDniApoderado] = useState("");
-  const [telefonoApoderado, setTelefonoApoderado] = useState("");
   const [celularApoderado, setCelularApoderado] = useState("");
   const [docente, setDocente] = useState("");
   const [emailDocente, setEmailDocente] = useState("");
@@ -130,7 +129,6 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
         sexo: sexo as Sexo,
         apoderado: apoderado.trim(),
         dniApoderado: dniApoderadoLimpio,
-        telefonoApoderado: telefonoApoderado.trim() || undefined,
         celularApoderado: celularApoderado.trim(),
         docente: docente.trim(),
         emailDocente: emailDocente.trim(),
@@ -357,16 +355,6 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
                       setCelularApoderado(e.target.value);
                       setStepError("");
                     }}
-                  />
-                </label>
-                <label className="wizard-label">
-                  <span className="wizard-label-text">Teléfono fijo (opcional)</span>
-                  <input
-                    type="tel"
-                    className="form-field"
-                    placeholder="Ej. 01 234 5678"
-                    value={telefonoApoderado}
-                    onChange={(e) => setTelefonoApoderado(e.target.value)}
                   />
                 </label>
               </div>

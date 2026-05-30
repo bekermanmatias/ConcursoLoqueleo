@@ -94,9 +94,6 @@ participationsRouter.post("/", async (req, res) => {
       sexo: req.body.sexo,
       apoderado: String(req.body.apoderado).trim(),
       dniApoderado,
-      telefonoApoderado: req.body.telefonoApoderado
-        ? String(req.body.telefonoApoderado)
-        : undefined,
       celularApoderado: String(req.body.celularApoderado),
       docente: String(req.body.docente).trim(),
       emailDocente: String(req.body.emailDocente).trim(),

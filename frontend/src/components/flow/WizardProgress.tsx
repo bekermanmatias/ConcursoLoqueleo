@@ -36,7 +36,7 @@ const stepConfig: Record<Step, StepConfig> = {
     title: "¿Quién es tu",
     titleAccent: "apoderado?",
     description:
-      "Indica el nombre y apellido, DNI y teléfono de contacto de tu madre, padre o tutor.",
+      "Indica el nombre y apellido, DNI y celular de contacto de tu madre, padre o tutor.",
   },
   5: {
     percent: 88,

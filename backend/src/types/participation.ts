@@ -38,7 +38,6 @@ export interface CreateParticipationInput {
   sexo: Sexo;
   apoderado: string;
   dniApoderado: string;
-  telefonoApoderado?: string;
   celularApoderado: string;
   docente: string;
   emailDocente: string;

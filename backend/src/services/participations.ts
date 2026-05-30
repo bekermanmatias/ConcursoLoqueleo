@@ -181,15 +181,14 @@ export async function createParticipation(
     const participante = await client.query<{ id: number }>(
       `INSERT INTO participantes (
         dni_estudiante, concursante, sexo,
-        apoderado, dni_apoderado, telefono_apoderado, celular_apoderado,
+        apoderado, dni_apoderado, celular_apoderado,
         docente, email_docente, colegio_id, grado_id
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       ON CONFLICT (dni_estudiante) DO UPDATE SET
         concursante = EXCLUDED.concursante,
         sexo = EXCLUDED.sexo,
         apoderado = EXCLUDED.apoderado,
         dni_apoderado = EXCLUDED.dni_apoderado,
-        telefono_apoderado = EXCLUDED.telefono_apoderado,
         celular_apoderado = EXCLUDED.celular_apoderado,
         docente = EXCLUDED.docente,
         email_docente = EXCLUDED.email_docente,
@@ -202,7 +201,6 @@ export async function createParticipation(
         input.sexo,
         input.apoderado,
         input.dniApoderado,
-        input.telefonoApoderado ?? null,
         input.celularApoderado,
         input.docente,
         input.emailDocente,
