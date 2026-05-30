@@ -1,0 +1,80 @@
+# Docker con hot reload: código montado desde tu PC, sin reconstruir en cada cambio.
+# Uso: docker compose -f docker-compose.dev.yml up --build
+# Sitio: http://localhost:8080 (o http://localhost si FRONTEND_PORT=80)
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: loqueleo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-loqueleo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-loqueleo}
+      POSTGRES_DB: ${POSTGRES_DB:-loqueleo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loqueleo} -d ${POSTGRES_DB:-loqueleo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: loqueleo-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-loqueleo}:${POSTGRES_PASSWORD:-loqueleo}@db:5432/${POSTGRES_DB:-loqueleo}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
+      APP_DOMAIN: ${APP_DOMAIN:-concursope.loqueleo.com}
+      CODIGO_CONCURSO: ${CODIGO_CONCURSO:-LQL2026}
+      STORAGE_MODE: ${STORAGE_MODE:-local}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      S3_UPLOAD_BUCKET: ${S3_UPLOAD_BUCKET:-}
+      S3_UPLOAD_PREFIX: ${S3_UPLOAD_PREFIX:-entregables}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_PUBLIC_URL_BASE: ${S3_PUBLIC_URL_BASE:-}
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/db:/app/db
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: loqueleo-frontend
+    restart: unless-stopped
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      API_PROXY_TARGET: http://backend:3000
+      HMR_CLIENT_PORT: ${HMR_CLIENT_PORT:-8080}
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/astro.config.mjs:/app/astro.config.mjs
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    ports:
+      - "8080:4321"
+      - "${FRONTEND_PORT:-80}:4321"
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  frontend_node_modules:

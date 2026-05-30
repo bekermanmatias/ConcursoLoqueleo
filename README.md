@@ -9,7 +9,8 @@ Monorepo alineado con la arquitectura AWS de Santillana: **ECS + ECR** (backend)
 ├── backend/           # Express → imagen Docker en ECR / ECS
 ├── deploy/            # Task Definition ECS, CORS S3, guía Bamboo
 ├── scripts/           # Push ECR y deploy frontend S3
-├── docker-compose.yml           # Dev local (Postgres + API + nginx)
+├── docker-compose.yml           # Producción local (Postgres + API + nginx)
+├── docker-compose.dev.yml       # Desarrollo Docker con hot reload
 └── docker-compose.s3-local.yml  # Override con MinIO (simula S3)
 ```
 
@@ -30,7 +31,46 @@ Capacidad: ~10.000 inscripciones. Límites de archivo según TI: **PDF 10 MB**, 
 
 **Requisitos:** Docker Desktop instalado y en ejecución.
 
-### 1. Levantar todo
+### Dos formas de trabajar
+
+| Modo | Comando | URL | ¿Recarga al guardar? |
+|------|---------|-----|----------------------|
+| **Docker desarrollo (recomendado)** | `npm run docker:dev` o `.\scripts\dev.ps1` | http://localhost:8080 | Sí, al instante |
+| **Docker producción** | `docker compose up --build` | http://localhost:8080 | No — hay que reconstruir |
+
+### Desarrollo en Docker con hot reload
+
+Todo sigue en Docker (Postgres + API + frontend), pero el código se monta desde tu PC. **No hace falta reconstruir en cada cambio.**
+
+**Primera vez:**
+
+```bash
+cp .env.example .env
+```
+
+**Levantar (cada día que programes):**
+
+```powershell
+.\scripts\dev.ps1
+```
+
+O:
+
+```bash
+npm run docker:dev
+```
+
+Abre **http://localhost:8080**. Al guardar en `frontend/src/` o `backend/src/`, el cambio se refleja en segundos.
+
+Solo vuelve a usar `--build` si cambias `package.json` o los `Dockerfile.dev`.
+
+Para dejarlo en segundo plano:
+
+```bash
+npm run docker:dev:detach
+```
+
+### Probar el stack completo en Docker (como producción / nginx)
 
 Desde la raíz del repo:
 
@@ -39,7 +79,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-La primera vez tarda unos minutos (descarga imágenes y construye frontend + backend).
+La primera vez tarda unos minutos. **Cada cambio de código exige volver a construir** (`docker compose up --build`).
 
 Para dejarlo en segundo plano:
 
@@ -67,13 +107,16 @@ docker compose up --build -d
 ### 4. Comandos útiles
 
 ```bash
-# Ver logs en vivo
-docker compose logs -f
+# Desarrollo con hot reload
+npm run docker:dev
+docker compose -f docker-compose.dev.yml logs -f
 
-# Detener
+# Detener (dev o prod)
+docker compose -f docker-compose.dev.yml down
 docker compose down
 
 # Resetear base de datos (tras cambio de esquema)
+docker compose -f docker-compose.dev.yml down -v
 docker compose down -v
 docker compose up --build
 ```
@@ -88,32 +131,6 @@ npm install
 ```
 
 El editor necesita `frontend/node_modules` para resolver la config de Astro. Docker no instala eso en tu máquina; solo dentro del contenedor.
-
-### 6. Desarrollo sin reconstruir Docker (hot reload)
-
-Terminal 1 — solo Postgres:
-
-```bash
-docker compose up db -d
-```
-
-Terminal 2 — backend:
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-Terminal 3 — frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Sitio con recarga: http://localhost:4321 (proxy `/api` → backend en `:3000`).
 
 ## Base de datos (esquema oficial)
 
@@ -146,14 +163,6 @@ docker compose -f docker-compose.yml -f docker-compose.s3-local.yml up --build
 ```
 
 Consola MinIO: http://localhost:9001 (minio / minio123456)
-
-## Desarrollo sin Docker
-
-```bash
-docker compose up db -d
-cd backend && npm install && npm run dev
-cd frontend && npm install && npm run dev
-```
 
 ## Despliegue AWS
 

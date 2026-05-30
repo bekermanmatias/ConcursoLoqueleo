@@ -649,7 +649,7 @@
 
   /* Wizard de participación */
   .wizard-progress {
-    @apply mb-8;
+    @apply mb-5;
   }
 
   .wizard-progress-rail {
@@ -678,7 +678,7 @@
   }
 
   .wizard-journey-head {
-    @apply mb-8 min-h-[8.5rem] text-left sm:min-h-[9rem];
+    @apply mb-3 text-left;
   }
 
   .wizard-journey-title {
@@ -690,7 +690,7 @@
   }
 
   .wizard-journey-desc {
-    @apply mt-3 text-sm sm:text-base text-gray-600 leading-relaxed;
+    @apply mt-2 text-sm sm:text-base text-gray-600 leading-relaxed;
   }
 
   .participar-form {
@@ -702,15 +702,15 @@
   }
 
   .wizard-main {
-    @apply flex min-h-[34rem] flex-col;
+    @apply flex min-h-[38rem] flex-col sm:min-h-[40rem];
   }
 
   .wizard-panel {
-    @apply mt-0 flex min-h-[24rem] flex-1 flex-col;
+    @apply mt-0 flex min-h-[32rem] flex-1 flex-col;
   }
 
   .wizard-step-slot {
-    @apply min-h-[16rem] flex-1;
+    @apply flex-1 min-h-0;
   }
 
   .wizard-step-error {
@@ -885,7 +885,7 @@
     width: 100%;
     margin-top: auto;
     flex-shrink: 0;
-    padding-top: 1rem;
+    padding-top: 2.5rem;
     min-height: 4.375rem;
   }
 
