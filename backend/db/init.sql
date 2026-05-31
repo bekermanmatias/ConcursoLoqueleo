@@ -8,6 +8,9 @@ DROP TABLE IF EXISTS retos CASCADE;
 DROP TABLE IF EXISTS grados CASCADE;
 DROP TABLE IF EXISTS colegios CASCADE;
 DROP TABLE IF EXISTS ubicaciones CASCADE;
+DROP TABLE IF EXISTS distritos CASCADE;
+DROP TABLE IF EXISTS provincias CASCADE;
+DROP TABLE IF EXISTS departamentos CASCADE;
 DROP TABLE IF EXISTS usuarios_internos CASCADE;
 DROP TABLE IF EXISTS participations CASCADE;
 
@@ -29,13 +32,42 @@ CREATE TABLE usuarios_internos (
   rol rol_usuario NOT NULL
 );
 
+CREATE TABLE departamentos (
+  id INT PRIMARY KEY,
+  nombre VARCHAR(255) NOT NULL,
+  ubigeo VARCHAR(2) NOT NULL UNIQUE
+);
+
+CREATE TABLE provincias (
+  id INT PRIMARY KEY,
+  nombre VARCHAR(255) NOT NULL,
+  ubigeo VARCHAR(4) NOT NULL UNIQUE,
+  departamento_id INT NOT NULL REFERENCES departamentos (id)
+);
+
+CREATE INDEX idx_provincias_departamento ON provincias (departamento_id);
+
+CREATE TABLE distritos (
+  id INT PRIMARY KEY,
+  nombre VARCHAR(255) NOT NULL,
+  ubigeo VARCHAR(6) NOT NULL UNIQUE,
+  provincia_id INT NOT NULL REFERENCES provincias (id),
+  departamento_id INT NOT NULL REFERENCES departamentos (id)
+);
+
+CREATE INDEX idx_distritos_provincia ON distritos (provincia_id);
+CREATE INDEX idx_distritos_departamento ON distritos (departamento_id);
+
 CREATE TABLE ubicaciones (
   id SERIAL PRIMARY KEY,
   departamento VARCHAR(255) NOT NULL,
   provincia VARCHAR(255) NOT NULL,
   distrito VARCHAR(255) NOT NULL,
+  ubigeo VARCHAR(6) UNIQUE,
   UNIQUE (departamento, provincia, distrito)
 );
+
+CREATE INDEX idx_ubicaciones_ubigeo ON ubicaciones (ubigeo);
 
 CREATE TABLE colegios (
   id SERIAL PRIMARY KEY,

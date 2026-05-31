@@ -1,14 +1,24 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+
+export type SelectOption = string | { value: string; label: string };
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
-  options: readonly string[];
+  options: readonly SelectOption[];
   placeholder?: string;
   disabled?: boolean;
   id?: string;
+  /** Color del reto */
+  accent?: string;
+}
+
+function normalizeOptions(options: readonly SelectOption[]): { value: string; label: string }[] {
+  return options.map((option) =>
+    typeof option === "string" ? { value: option, label: option } : option,
+  );
 }
 
 export default function FormSelect({
@@ -18,6 +28,7 @@ export default function FormSelect({
   placeholder = "Elige una opción…",
   disabled = false,
   id,
+  accent,
 }: Props) {
   const autoId = useId();
   const triggerId = id ?? autoId;
@@ -27,30 +38,38 @@ export default function FormSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
+  const normalizedOptions = useMemo(() => normalizeOptions(options), [options]);
+
   const filteredOptions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return options;
-    return options.filter((option) => option.toLowerCase().includes(normalized));
-  }, [options, query]);
+    if (!normalized) return normalizedOptions;
+    return normalizedOptions.filter((option) =>
+      option.label.toLowerCase().includes(normalized),
+    );
+  }, [normalizedOptions, query]);
 
-  const close = () => {
+  const close = useCallback(() => {
     setOpen(false);
     setQuery("");
-  };
+  }, []);
 
-  const selectOption = (option: string) => {
-    onChange(option);
+  const selectOption = (optionValue: string) => {
+    onChange(optionValue);
     close();
   };
 
+  const accentVars = accent ? ({ "--field-accent": accent } as CSSProperties) : undefined;
+
   useEffect(() => {
     if (!open) return;
-    searchRef.current?.focus();
+
+    requestAnimationFrame(() => {
+      searchRef.current?.focus({ preventScroll: true });
+    });
 
     const handlePointer = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        close();
-      }
+      if (rootRef.current?.contains(event.target as Node)) return;
+      close();
     };
 
     const handleKey = (event: KeyboardEvent) => {
@@ -59,13 +78,15 @@ export default function FormSelect({
 
     document.addEventListener("mousedown", handlePointer);
     document.addEventListener("keydown", handleKey);
+
     return () => {
       document.removeEventListener("mousedown", handlePointer);
       document.removeEventListener("keydown", handleKey);
     };
-  }, [open]);
+  }, [open, close]);
 
-  const displayValue = value || placeholder;
+  const selectedOption = normalizedOptions.find((option) => option.value === value);
+  const displayValue = selectedOption?.label ?? placeholder;
   const isPlaceholder = !value;
 
   const openWithQuery = (initialQuery = "") => {
@@ -75,7 +96,11 @@ export default function FormSelect({
   };
 
   return (
-    <div className="form-select-wrap" ref={rootRef}>
+    <div
+      className={["form-select-wrap", open ? "form-select-wrap--open" : ""].join(" ")}
+      ref={rootRef}
+      style={accentVars}
+    >
       <button
         type="button"
         id={triggerId}
@@ -88,6 +113,9 @@ export default function FormSelect({
           isPlaceholder ? "form-select-trigger--placeholder" : "",
         ].join(" ")}
         onClick={() => (open ? close() : openWithQuery())}
+        onMouseDown={(event) => {
+          if (!disabled) event.preventDefault();
+        }}
         onKeyDown={(event) => {
           if (disabled || open) return;
           if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
@@ -135,24 +163,24 @@ export default function FormSelect({
             onKeyDown={(event) => {
               if (event.key === "Enter" && filteredOptions[0]) {
                 event.preventDefault();
-                selectOption(filteredOptions[0]);
+                selectOption(filteredOptions[0].value);
               }
             }}
           />
           <ul className="form-select-menu" role="listbox" aria-labelledby={triggerId}>
             {filteredOptions.map((option) => (
-              <li key={option} role="none">
+              <li key={option.value} role="none">
                 <button
                   type="button"
                   role="option"
-                  aria-selected={value === option}
+                  aria-selected={value === option.value}
                   className={[
                     "form-select-option",
-                    value === option ? "form-select-option--active" : "",
+                    value === option.value ? "form-select-option--active" : "",
                   ].join(" ")}
-                  onClick={() => selectOption(option)}
+                  onClick={() => selectOption(option.value)}
                 >
-                  {option}
+                  {option.label}
                 </button>
               </li>
             ))}

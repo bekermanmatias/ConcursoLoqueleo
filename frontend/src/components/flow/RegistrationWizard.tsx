@@ -1,15 +1,21 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import FileDropzone from "./FileDropzone";
 import FormSelect from "./FormSelect";
 import { WizardJourneyHead, WizardProgressBar, type WizardStep } from "./WizardProgress";
 import { saveParticipation } from "../../lib/participations";
 import { uploadParticipationFile } from "../../lib/uploads";
 import {
-  ciudadesPorDepartamento,
+  fetchDepartamentos,
+  fetchDistritos,
+  fetchProvincias,
+  toSelectOptions,
+  type Departamento,
+  type Distrito,
+  type Provincia,
+} from "../../lib/ubigeo";
+import {
   colegiosMock,
   colegiosNombres,
-  departamentos,
-  distritosPorCiudad,
   dniRegistrados,
   type Grado,
   type Sexo,
@@ -28,9 +34,17 @@ function isValidEmail(value: string): boolean {
 
 export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accent }: Props) {
   const [step, setStep] = useState<WizardStep>(1);
+  const [departamentoId, setDepartamentoId] = useState("");
+  const [provinciaId, setProvinciaId] = useState("");
+  const [distritoId, setDistritoId] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [provincia, setProvincia] = useState("");
   const [distrito, setDistrito] = useState("");
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
+  const [provincias, setProvincias] = useState<Provincia[]>([]);
+  const [distritos, setDistritos] = useState<Distrito[]>([]);
+  const [ubigeoLoading, setUbigeoLoading] = useState(true);
+  const [ubigeoError, setUbigeoError] = useState("");
   const [colegio, setColegio] = useState("");
   const [concursante, setConcursante] = useState("");
   const [dni, setDni] = useState("");
@@ -45,14 +59,81 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
   const [stepError, setStepError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const provincias = useMemo(
-    () => (departamento ? ciudadesPorDepartamento[departamento] ?? [] : []),
-    [departamento],
-  );
-  const distritos = useMemo(
-    () => (provincia ? distritosPorCiudad[provincia] ?? [] : []),
-    [provincia],
-  );
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchDepartamentos()
+      .then((rows) => {
+        if (!cancelled) {
+          setDepartamentos(rows);
+          setUbigeoError("");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUbigeoError("No pudimos cargar los departamentos. Recarga la página e intenta otra vez.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setUbigeoLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!departamentoId) {
+      setProvincias([]);
+      return;
+    }
+
+    let cancelled = false;
+    setUbigeoError("");
+
+    fetchProvincias(Number(departamentoId))
+      .then((rows) => {
+        if (!cancelled) setProvincias(rows);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUbigeoError("No pudimos cargar las provincias. Elige el departamento otra vez.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [departamentoId]);
+
+  useEffect(() => {
+    if (!provinciaId) {
+      setDistritos([]);
+      return;
+    }
+
+    let cancelled = false;
+    setUbigeoError("");
+
+    fetchDistritos(Number(provinciaId))
+      .then((rows) => {
+        if (!cancelled) setDistritos(rows);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUbigeoError("No pudimos cargar los distritos. Elige la provincia otra vez.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [provinciaId]);
+
+  const departamentoOptions = useMemo(() => toSelectOptions(departamentos), [departamentos]);
+  const provinciaOptions = useMemo(() => toSelectOptions(provincias), [provincias]);
+  const distritoOptions = useMemo(() => toSelectOptions(distritos), [distritos]);
 
   const colegioSeleccionado = colegiosMock.find((c) => c.nombre === colegio);
   const dniLimpio = dni.replace(/\D/g, "");
@@ -179,48 +260,69 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
         <WizardJourneyHead step={step} />
 
         <div className="wizard-panel">
-          <div className="wizard-step-slot">
+          <div className={step === 5 ? "wizard-step-slot wizard-step-slot--scroll" : "wizard-step-slot"}>
             {step === 1 && (
               <div className="wizard-step">
+                {ubigeoLoading && (
+                  <p className="wizard-hint text-gray-600 bg-gray-50">Cargando departamentos…</p>
+                )}
+                {ubigeoError && (
+                  <p className="wizard-hint wizard-hint--error" role="alert">
+                    {ubigeoError}
+                  </p>
+                )}
                 <div className="wizard-label">
                   <span className="wizard-label-text">Departamento</span>
                   <FormSelect
-                    value={departamento}
-                    onChange={(next) => {
-                      setDepartamento(next);
+                    accent={accent}
+                    value={departamentoId}
+                    disabled={ubigeoLoading || departamentoOptions.length === 0}
+                    onChange={(nextId) => {
+                      const selected = departamentos.find((row) => String(row.id) === nextId);
+                      setDepartamentoId(nextId);
+                      setDepartamento(selected?.nombre ?? "");
+                      setProvinciaId("");
                       setProvincia("");
+                      setDistritoId("");
                       setDistrito("");
                       setStepError("");
                     }}
-                    options={departamentos}
+                    options={departamentoOptions}
                     placeholder="Elige tu departamento…"
                   />
                 </div>
                 <div className="wizard-label">
                   <span className="wizard-label-text">Provincia</span>
                   <FormSelect
-                    value={provincia}
-                    disabled={!departamento}
-                    onChange={(next) => {
-                      setProvincia(next);
+                    accent={accent}
+                    value={provinciaId}
+                    disabled={!departamentoId || provinciaOptions.length === 0}
+                    onChange={(nextId) => {
+                      const selected = provincias.find((row) => String(row.id) === nextId);
+                      setProvinciaId(nextId);
+                      setProvincia(selected?.nombre ?? "");
+                      setDistritoId("");
                       setDistrito("");
                       setStepError("");
                     }}
-                    options={provincias}
-                    placeholder={departamento ? "Elige tu provincia…" : "Primero elige departamento"}
+                    options={provinciaOptions}
+                    placeholder={departamentoId ? "Elige tu provincia…" : "Primero elige departamento"}
                   />
                 </div>
                 <div className="wizard-label">
                   <span className="wizard-label-text">Distrito</span>
                   <FormSelect
-                    value={distrito}
-                    disabled={!provincia}
-                    onChange={(next) => {
-                      setDistrito(next);
+                    accent={accent}
+                    value={distritoId}
+                    disabled={!provinciaId || distritoOptions.length === 0}
+                    onChange={(nextId) => {
+                      const selected = distritos.find((row) => String(row.id) === nextId);
+                      setDistritoId(nextId);
+                      setDistrito(selected?.nombre ?? "");
                       setStepError("");
                     }}
-                    options={distritos}
-                    placeholder={provincia ? "Elige tu distrito…" : "Primero elige provincia"}
+                    options={distritoOptions}
+                    placeholder={provinciaId ? "Elige tu distrito…" : "Primero elige provincia"}
                   />
                 </div>
               </div>
@@ -231,6 +333,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
                 <div className="wizard-label">
                   <span className="wizard-label-text">Colegio</span>
                   <FormSelect
+                    accent={accent}
                     value={colegio}
                     onChange={(next) => {
                       setColegio(next);
@@ -302,6 +405,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
                 <div className="wizard-label">
                   <span className="wizard-label-text">Género</span>
                   <FormSelect
+                    accent={accent}
                     value={sexo === "M" ? "Masculino" : sexo === "F" ? "Femenino" : ""}
                     onChange={(next) => {
                       setSexo(next === "Masculino" ? "M" : "F");

@@ -1,5 +1,6 @@
 import type { ParticipationRecord } from "../data/participations";
 import type { Grado, Sexo } from "../data/locations";
+import { apiUrl } from "./api";
 
 export interface SaveParticipationInput {
   dni: string;
@@ -23,10 +24,8 @@ export interface SaveParticipationInput {
   s3Key?: string;
 }
 
-const API_BASE = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
-
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(apiUrl(path), {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +81,7 @@ export async function getParticipationByDni(dni: string): Promise<ParticipationR
   const clean = dni.replace(/\D/g, "");
   if (clean.length !== 8) return null;
 
-  const response = await fetch(`${API_BASE}/api/participations/${clean}`);
+  const response = await fetch(apiUrl(`/api/participations/${clean}`));
   if (response.status === 404) return null;
   if (!response.ok) throw new Error("No se pudo consultar la participación");
 

@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+import { apiUrl } from "./api";
 
 export interface PresignResponse {
   mode: "s3";
@@ -25,7 +25,7 @@ async function requestPresign(
   bookId: string,
   dni?: string,
 ): Promise<UploadTarget> {
-  const response = await fetch(`${API_BASE}/api/uploads/presign`, {
+  const response = await fetch(apiUrl("/api/uploads/presign"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

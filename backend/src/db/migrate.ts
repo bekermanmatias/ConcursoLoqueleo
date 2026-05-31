@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { pool } from "./pool.js";
+import { importUbigeo } from "./import-ubigeo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbDir = path.join(__dirname, "../../db");
@@ -23,6 +24,8 @@ export async function runMigrations() {
   } catch {
     // Sin carpeta migrations adicionales
   }
+
+  await importUbigeo(pool);
 
   const seedSql = readFileSync(path.join(dbDir, "seed.sql"), "utf8");
   await pool.query(seedSql);

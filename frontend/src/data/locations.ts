@@ -1,27 +1,3 @@
-export const departamentos = ["Lima", "Arequipa", "Cusco", "La Libertad", "Piura"];
-
-export const ciudadesPorDepartamento: Record<string, string[]> = {
-  Lima: ["Lima", "Huacho", "Cañete"],
-  Arequipa: ["Arequipa", "Camaná"],
-  Cusco: ["Cusco", "Sicuani"],
-  "La Libertad": ["Trujillo", "Chepén"],
-  Piura: ["Piura", "Sullana"],
-};
-
-export const distritosPorCiudad: Record<string, string[]> = {
-  Lima: ["Miraflores", "San Isidro", "Surco", "Comas", "San Juan de Lurigancho"],
-  Huacho: ["Huacho", "Huaura"],
-  Cañete: ["San Vicente de Cañete", "Asia"],
-  Arequipa: ["Cercado", "Cayma", "Yanahuara"],
-  Camaná: ["Camaná"],
-  Cusco: ["Cusco", "San Sebastián", "Wanchaq"],
-  Sicuani: ["Sicuani"],
-  Trujillo: ["Trujillo", "La Esperanza", "El Porvenir"],
-  Chepén: ["Chepén"],
-  Piura: ["Piura", "Castilla"],
-  Sullana: ["Sullana"],
-};
-
 export const colegiosMock = [
   { codigo: "0890123", nombre: "IE San Martín de Porres" },
   { codigo: "0890456", nombre: "Colegio Innovación School" },

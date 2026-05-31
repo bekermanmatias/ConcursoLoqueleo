@@ -32,30 +32,21 @@ FROM (VALUES
 JOIN grados g ON g.nombre = v.grado_nombre AND g.nivel = v.grado_nivel
 ON CONFLICT (nombre_obra, grado_id) DO NOTHING;
 
-INSERT INTO ubicaciones (departamento, provincia, distrito) VALUES
-  ('Lima', 'Lima', 'Miraflores'),
-  ('Lima', 'Lima', 'San Isidro'),
-  ('Lima', 'Lima', 'Surco')
-ON CONFLICT (departamento, provincia, distrito) DO NOTHING;
-
 INSERT INTO colegios (codigo_colegio, nombre, ubicacion_id)
 SELECT v.codigo, v.nombre, u.id
 FROM (VALUES
-  ('0890123', 'IE San Martín de Porres', 'Lima', 'Lima', 'Miraflores'),
-  ('0890456', 'Colegio Innovación School', 'Lima', 'Lima', 'San Isidro'),
-  ('0890789', 'IE María Auxiliadora', 'Lima', 'Lima', 'Surco'),
-  ('0891001', 'Colegio San Agustín', 'Lima', 'Lima', 'Miraflores'),
-  ('0891002', 'IE Fe y Alegría N° 24', 'Lima', 'Lima', 'San Isidro'),
-  ('0891003', 'Colegio Británico Peruano', 'Lima', 'Lima', 'Surco'),
-  ('0891004', 'IE José Carlos Mariátegui', 'Lima', 'Lima', 'Miraflores'),
-  ('0891005', 'Colegio Santa María', 'Lima', 'Lima', 'San Isidro'),
-  ('0891006', 'IE Juan XXIII', 'Lima', 'Lima', 'Surco'),
-  ('0891007', 'Colegio Alpamayo', 'Lima', 'Lima', 'Miraflores')
-) AS v(codigo, nombre, departamento, provincia, distrito)
-JOIN ubicaciones u
-  ON u.departamento = v.departamento
- AND u.provincia = v.provincia
- AND u.distrito = v.distrito
+  ('0890123', 'IE San Martín de Porres', '150122'),
+  ('0890456', 'Colegio Innovación School', '150131'),
+  ('0890789', 'IE María Auxiliadora', '150140'),
+  ('0891001', 'Colegio San Agustín', '150122'),
+  ('0891002', 'IE Fe y Alegría N° 24', '150131'),
+  ('0891003', 'Colegio Británico Peruano', '150140'),
+  ('0891004', 'IE José Carlos Mariátegui', '150122'),
+  ('0891005', 'Colegio Santa María', '150131'),
+  ('0891006', 'IE Juan XXIII', '150140'),
+  ('0891007', 'Colegio Alpamayo', '150122')
+) AS v(codigo, nombre, ubigeo)
+JOIN ubicaciones u ON u.ubigeo = v.ubigeo
 ON CONFLICT (codigo_colegio) DO NOTHING;
 
 -- Participantes demo (Ayuda)
