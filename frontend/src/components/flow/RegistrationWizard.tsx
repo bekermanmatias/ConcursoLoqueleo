@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import FileDropzone from "./FileDropzone";
 import FormSelect from "./FormSelect";
 import { WizardJourneyHead, WizardProgressBar, type WizardStep } from "./WizardProgress";
-import { saveParticipation } from "../../lib/participations";
+import {
+  getParticipationErrorMessage,
+  isDniBlockedForRegistration,
+  saveParticipation,
+} from "../../lib/participations";
 import { uploadParticipationFile } from "../../lib/uploads";
 import {
   fetchDepartamentos,
@@ -16,7 +20,6 @@ import {
 import {
   colegiosMock,
   colegiosNombres,
-  dniRegistrados,
   type Grado,
   type Sexo,
 } from "../../data/locations";
@@ -58,6 +61,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
   const [fileError, setFileError] = useState("");
   const [stepError, setStepError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [dniChecking, setDniChecking] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,9 +160,6 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
       if (!concursante.trim()) return "Escribe tu nombre y apellido.";
       if (dniLimpio.length !== 8) return "Escribe tu DNI (8 números).";
       if (!sexo) return "Elige tu género.";
-      if (dniRegistrados.has(dniLimpio)) {
-        return "Este DNI ya participó en un reto.";
-      }
       return null;
     }
     if (currentStep === 4) {
@@ -170,11 +171,28 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
     return null;
   };
 
-  const goNext = () => {
+  const goNext = async () => {
     const error = validateStep(step);
     if (error) {
       setStepError(error);
       return;
+    }
+
+    if (step === 3) {
+      setDniChecking(true);
+      setStepError("");
+      try {
+        const blocked = await isDniBlockedForRegistration(dniLimpio);
+        if (blocked) {
+          setStepError("Este DNI ya participó en un reto. Solo puedes inscribirte una vez.");
+          return;
+        }
+      } catch {
+        setStepError("No pudimos verificar tu DNI. Revisa tu conexión e intenta otra vez.");
+        return;
+      } finally {
+        setDniChecking(false);
+      }
     }
 
     setStepError("");
@@ -233,11 +251,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
       );
       window.location.href = `/libro/${bookId}/confirmacion/`;
     } catch (error) {
-      setStepError(
-        error instanceof Error
-          ? error.message
-          : "No pudimos registrar tu participación. Revisa los datos e intenta otra vez.",
-      );
+      setStepError(getParticipationErrorMessage(error));
       setSubmitting(false);
     }
   };
@@ -487,10 +501,14 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
               )}
             </div>
 
+            {step === 3 && dniChecking && (
+              <p className="wizard-hint text-gray-600 bg-gray-50">Consultando tu DNI…</p>
+            )}
             <div className="wizard-actions">
             <button
               type="button"
               onClick={goBack}
+              disabled={dniChecking || submitting}
               className="wizard-btn wizard-btn--outline"
               style={{ borderColor: accent, color: accent }}
             >
@@ -499,7 +517,8 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
             <div className="wizard-actions-forward">
               <button
                 type="button"
-                onClick={goNext}
+                onClick={() => void goNext()}
+                disabled={dniChecking || submitting}
                 className={[
                   "wizard-btn wizard-btn--primary",
                   isLastStep ? "wizard-btn--hidden" : "",
@@ -508,7 +527,7 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
                 aria-hidden={isLastStep}
                 tabIndex={isLastStep ? -1 : 0}
               >
-                Siguiente
+                {step === 3 && dniChecking ? "Consultando…" : "Siguiente"}
               </button>
               <button
                 type="button"

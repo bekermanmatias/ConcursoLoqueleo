@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { pool } from "../db/pool.js";
 import { config } from "../config.js";
+import { assertLocalObjectReady } from "./storage.js";
 import {
   BOOKS_BY_SLUG,
   buildArchivoUrl,
@@ -170,6 +171,13 @@ export async function createParticipation(
     ubicacionId,
   );
 
+  const storageKey = input.s3Key ?? input.fileUrl;
+  if (storageKey) {
+    await assertLocalObjectReady(storageKey);
+  } else if (!input.fileUrl?.startsWith("http")) {
+    throw new Error("FILE_NOT_UPLOADED");
+  }
+
   const trabajoEnlace = buildArchivoUrl(input.fileName, input.fileUrl, input.s3Key);
   const tipoArchivo = inferTipoArchivo(input.fileName);
   const codigoEntrega = generateCodigoEntrega();
@@ -251,6 +259,13 @@ export async function reuploadFile(
 ): Promise<ParticipationRecord | null> {
   const existing = await findByDni(dni);
   if (!existing || !canReupload(existing)) return null;
+
+  const storageKey = s3Key ?? fileUrl;
+  if (storageKey) {
+    await assertLocalObjectReady(storageKey);
+  } else if (!fileUrl?.startsWith("http")) {
+    throw new Error("FILE_NOT_UPLOADED");
+  }
 
   const trabajoEnlace = buildArchivoUrl(fileName, fileUrl, s3Key);
   const tipoArchivo = inferTipoArchivo(fileName);

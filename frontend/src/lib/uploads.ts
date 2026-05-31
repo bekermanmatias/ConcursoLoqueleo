@@ -1,6 +1,6 @@
 import { apiUrl } from "./api";
 
-export interface PresignResponse {
+export interface S3UploadTarget {
   mode: "s3";
   uploadUrl: string;
   fileUrl: string;
@@ -8,11 +8,14 @@ export interface PresignResponse {
   expiresIn: number;
 }
 
-export interface LocalUploadResponse {
+export interface LocalUploadTarget {
   mode: "local";
+  uploadUrl: string;
+  s3Key: string;
+  expiresIn: number;
 }
 
-export type UploadTarget = PresignResponse | LocalUploadResponse;
+export type UploadTarget = S3UploadTarget | LocalUploadTarget;
 
 export interface UploadedFileMeta {
   fileName: string;
@@ -20,7 +23,7 @@ export interface UploadedFileMeta {
   s3Key?: string;
 }
 
-async function requestPresign(
+async function requestUploadTarget(
   file: File,
   bookId: string,
   dni?: string,
@@ -45,16 +48,36 @@ async function requestPresign(
   return response.json() as Promise<UploadTarget>;
 }
 
-/** Sube el archivo a S3 si el backend está en modo s3; en local solo devuelve metadatos. */
+/**
+ * Sube el entregable:
+ * - modo local → POST multipart al backend (simula S3 con misma clave de objeto)
+ * - modo s3 → PUT directo a URL firmada
+ */
 export async function uploadParticipationFile(
   file: File,
   bookId: string,
   dni?: string,
 ): Promise<UploadedFileMeta> {
-  const target = await requestPresign(file, bookId, dni);
+  const target = await requestUploadTarget(file, bookId, dni);
 
   if (target.mode === "local") {
-    return { fileName: file.name };
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const uploadResponse = await fetch(apiUrl(target.uploadUrl), {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const body = (await uploadResponse.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(body?.error ?? "No se pudo subir el archivo. Intenta otra vez.");
+    }
+
+    return {
+      fileName: file.name,
+      s3Key: target.s3Key,
+    };
   }
 
   const uploadResponse = await fetch(target.uploadUrl, {

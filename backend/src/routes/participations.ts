@@ -103,9 +103,39 @@ participationsRouter.post("/", async (req, res) => {
     });
     res.status(201).json(record);
   } catch (error) {
-    if (error instanceof Error && error.message === "DNI_ALREADY_REGISTERED") {
-      res.status(409).json({ error: "DNI ya registrado" });
-      return;
+    if (error instanceof Error) {
+      switch (error.message) {
+        case "DNI_ALREADY_REGISTERED":
+          res.status(409).json({
+            error: "Este DNI ya participó en un reto.",
+            code: "DNI_ALREADY_REGISTERED",
+          });
+          return;
+        case "UBICACION_REQUIRED":
+          res.status(400).json({
+            error: "Completa departamento, provincia y distrito.",
+            code: "UBICACION_REQUIRED",
+          });
+          return;
+        case "GRADO_NOT_FOUND":
+          res.status(400).json({
+            error: "El grado del reto no es válido.",
+            code: "GRADO_NOT_FOUND",
+          });
+          return;
+        case "RETO_NOT_FOUND":
+          res.status(400).json({
+            error: "No encontramos el reto de este libro.",
+            code: "RETO_NOT_FOUND",
+          });
+          return;
+        case "FILE_NOT_UPLOADED":
+          res.status(400).json({
+            error: "Primero sube tu archivo antes de enviar la inscripción.",
+            code: "FILE_NOT_UPLOADED",
+          });
+          return;
+      }
     }
     throw error;
   }

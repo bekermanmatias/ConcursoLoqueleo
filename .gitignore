@@ -18,6 +18,10 @@ pnpm-debug.log*
 .env
 .env.production
 
+# entregables locales (modo STORAGE_MODE=local)
+uploads/
+backend/uploads/
+
 # macOS-specific files
 .DS_Store
 

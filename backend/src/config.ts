@@ -25,8 +25,13 @@ export const config = {
   /** Dominio oficial del concurso (CORS S3, cookies, redirects). */
   appDomain: process.env.APP_DOMAIN ?? "concursope.loqueleo.com",
   storage: {
-    /** local = solo metadatos (dev/Docker). s3 = carga directa vía presigned URL (AWS). */
+    /** local = disco del servidor (dev). s3 = carga directa vía presigned URL (AWS/MinIO). */
     mode: (process.env.STORAGE_MODE ?? "local") as "local" | "s3",
+    /** Carpeta donde se guardan entregables en modo local. */
+    localDir: process.env.STORAGE_LOCAL_DIR ?? path.join(rootDir, "uploads"),
+    /** Secreto HMAC para tokens de subida local (presign → POST /file). */
+    uploadTokenSecret:
+      process.env.UPLOAD_TOKEN_SECRET ?? "dev-upload-secret-change-me",
     bucket: process.env.S3_UPLOAD_BUCKET ?? "",
     region: process.env.AWS_REGION ?? "us-east-1",
     prefix: process.env.S3_UPLOAD_PREFIX ?? "entregables",
@@ -53,6 +58,8 @@ export function assertProductionConfig(): void {
   if (config.storage.mode === "s3") {
     requiredInProduction("S3_UPLOAD_BUCKET", config.storage.bucket);
     requiredInProduction("AWS_REGION", config.storage.region);
+  } else if (config.nodeEnv === "production") {
+    requiredInProduction("UPLOAD_TOKEN_SECRET", process.env.UPLOAD_TOKEN_SECRET);
   }
 }
 

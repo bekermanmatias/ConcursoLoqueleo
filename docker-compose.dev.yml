@@ -41,11 +41,16 @@ services:
       S3_UPLOAD_PREFIX: ${S3_UPLOAD_PREFIX:-entregables}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
       S3_PUBLIC_URL_BASE: ${S3_PUBLIC_URL_BASE:-}
+      STORAGE_LOCAL_DIR: /app/uploads
+      UPLOAD_TOKEN_SECRET: ${UPLOAD_TOKEN_SECRET:-dev-upload-secret-change-me}
+      MAX_PDF_BYTES: ${MAX_PDF_BYTES:-10485760}
+      MAX_VIDEO_BYTES: ${MAX_VIDEO_BYTES:-262144000}
     volumes:
       - ./backend/src:/app/src
       - ./backend/db:/app/db
       - ./backend/tsconfig.json:/app/tsconfig.json
       - ./datos:/app/datos:ro
+      - ./uploads:/app/uploads
       - backend_node_modules:/app/node_modules
     depends_on:
       db:

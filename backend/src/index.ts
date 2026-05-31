@@ -6,6 +6,7 @@ import { runMigrations } from "./db/migrate.js";
 import { participationsRouter } from "./routes/participations.js";
 import { ubigeoRouter } from "./routes/ubigeo.js";
 import { uploadsRouter } from "./routes/uploads.js";
+import { ensureStorageReady } from "./services/storage.js";
 
 assertProductionConfig();
 
@@ -52,6 +53,7 @@ app.use("/api/participations", participationsRouter);
 
 async function start() {
   await runMigrations();
+  await ensureStorageReady();
   app.listen(config.port, "0.0.0.0", () => {
     console.log(`API escuchando en 0.0.0.0:${config.port} (${config.nodeEnv})`);
   });

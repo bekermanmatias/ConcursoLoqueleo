@@ -32,6 +32,3 @@ export const grados = [
 export type Grado = (typeof grados)[number];
 
 export type Sexo = "M" | "F";
-
-/** DNI ya registrados (demo) */
-export const dniRegistrados = new Set(["12345678", "87654321"]);
