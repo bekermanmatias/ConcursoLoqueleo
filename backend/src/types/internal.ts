@@ -63,7 +63,15 @@ export interface EvaluacionJurado {
 
 export interface InternalStats {
   totalTrabajos: number;
+  totalParticipantes: number;
   porEstado: Record<EstadoTrabajo, number>;
+  entregasPorDia: EntregaPorDia[];
+}
+
+export interface EntregaPorDia {
+  fecha: string;
+  cantidad: number;
+  acumulado: number;
 }
 
 export interface TrabajosFilterOptions {

@@ -97,6 +97,9 @@ function mapListItem(row: TrabajoRow): TrabajoListItem {
 export type TipoArchivoTrabajo = TrabajoListItem["tipoArchivo"];
 export type EvaluacionFiltro = "pendiente" | "evaluado";
 
+export const TRABAJOS_PAGE_SIZE_DEFAULT = 15;
+export const TRABAJOS_PAGE_SIZE_MAX = 100;
+
 export interface ListTrabajosOptions {
   estado?: EstadoTrabajo;
   q?: string;
@@ -112,8 +115,37 @@ export interface ListTrabajosOptions {
   fechaHasta?: string;
   evaluacion?: EvaluacionFiltro;
   juradoId?: number;
+  page?: number;
   limit?: number;
   offset?: number;
+}
+
+export interface TrabajosListResult {
+  items: TrabajoListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export function resolveTrabajosPagination(options: {
+  page?: number;
+  limit?: number;
+  offset?: number;
+}): { page: number; limit: number; offset: number } {
+  const limit = Math.min(
+    Math.max(options.limit ?? TRABAJOS_PAGE_SIZE_DEFAULT, 1),
+    TRABAJOS_PAGE_SIZE_MAX,
+  );
+
+  if (options.page !== undefined && options.page >= 1) {
+    const page = Math.floor(options.page);
+    return { page, limit, offset: (page - 1) * limit };
+  }
+
+  const offset = Math.max(options.offset ?? 0, 0);
+  const page = Math.floor(offset / limit) + 1;
+  return { page, limit, offset };
 }
 
 function buildListTrabajosWhere(options: ListTrabajosOptions): {
@@ -204,32 +236,37 @@ function buildListTrabajosWhere(options: ListTrabajosOptions): {
 
 export async function listTrabajos(
   options: ListTrabajosOptions = {},
-): Promise<{ items: TrabajoListItem[]; total: number }> {
-  const limit = Math.min(Math.max(options.limit ?? 50, 1), 100);
-  const offset = Math.max(options.offset ?? 0, 0);
+): Promise<TrabajosListResult> {
+  const { page, limit, offset } = resolveTrabajosPagination(options);
   const { whereSql, params, evalJoin } = buildListTrabajosWhere(options);
 
   const countResult = await pool.query<{ total: string }>(
-    `SELECT COUNT(*)::text AS total
+    `SELECT COUNT(DISTINCT t.id)::text AS total
      ${BASE_FROM}
      ${evalJoin}
      ${whereSql}`,
     params,
   );
 
+  const total = Number(countResult.rows[0]?.total ?? 0);
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
   const listParams = [...params, limit, offset];
   const result = await pool.query<TrabajoRow>(
     `${BASE_SELECT}
      ${evalJoin}
      ${whereSql}
-     ORDER BY t.fecha_envio DESC
+     ORDER BY t.fecha_envio DESC, t.id DESC
      LIMIT $${listParams.length - 1} OFFSET $${listParams.length}`,
     listParams,
   );
 
   return {
     items: result.rows.map(mapListItem),
-    total: Number(countResult.rows[0]?.total ?? 0),
+    total,
+    page,
+    limit,
+    totalPages,
   };
 }
 
@@ -331,8 +368,18 @@ export async function getInternalStats(): Promise<InternalStats> {
   const totalResult = await pool.query<{ total: string }>(
     `SELECT COUNT(*)::text AS total FROM trabajos`,
   );
+  const participantesResult = await pool.query<{ total: string }>(
+    `SELECT COUNT(DISTINCT participante_id)::text AS total FROM trabajos`,
+  );
   const byEstado = await pool.query<{ estado: EstadoTrabajo; total: string }>(
     `SELECT estado, COUNT(*)::text AS total FROM trabajos GROUP BY estado`,
+  );
+  const byDia = await pool.query<{ fecha: string; cantidad: string }>(
+    `SELECT (fecha_envio AT TIME ZONE 'America/Lima')::date::text AS fecha,
+            COUNT(*)::text AS cantidad
+     FROM trabajos
+     GROUP BY 1
+     ORDER BY 1`,
   );
 
   const porEstado: InternalStats["porEstado"] = {
@@ -347,8 +394,48 @@ export async function getInternalStats(): Promise<InternalStats> {
 
   return {
     totalTrabajos: Number(totalResult.rows[0]?.total ?? 0),
+    totalParticipantes: Number(participantesResult.rows[0]?.total ?? 0),
     porEstado,
+    entregasPorDia: buildEntregasPorDiaSeries(byDia.rows),
   };
+}
+
+function buildEntregasPorDiaSeries(
+  rows: Array<{ fecha: string; cantidad: string }>,
+): InternalStats["entregasPorDia"] {
+  if (rows.length === 0) return [];
+
+  const byDate = new Map(
+    rows.map((row) => [row.fecha.slice(0, 10), Number(row.cantidad)]),
+  );
+  const start = parseIsoDate(rows[0].fecha.slice(0, 10));
+  const end = parseIsoDate(rows[rows.length - 1].fecha.slice(0, 10));
+  const series: InternalStats["entregasPorDia"] = [];
+  let acumulado = 0;
+
+  for (let cursor = start; cursor <= end; cursor = addDays(cursor, 1)) {
+    const fecha = formatIsoDate(cursor);
+    const cantidad = byDate.get(fecha) ?? 0;
+    acumulado += cantidad;
+    series.push({ fecha, cantidad, acumulado });
+  }
+
+  return series;
+}
+
+function parseIsoDate(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function formatIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
 }
 
 export async function upsertEvaluacion(input: {

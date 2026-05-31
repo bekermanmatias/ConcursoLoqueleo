@@ -1,6 +1,6 @@
 import type { RolUsuario } from "../lib/auth";
 
-export type InternalNavId = "trabajos" | "resumen";
+export type InternalNavId = "trabajos" | "resumen" | "usuarios";
 
 export interface InternalNavItem {
   id: InternalNavId;
@@ -22,6 +22,12 @@ export const internalNavItems: InternalNavItem[] = [
     href: "/interno/admin/",
     roles: ["admin"],
   },
+  {
+    id: "usuarios",
+    label: "Usuarios",
+    href: "/interno/admin/usuarios/",
+    roles: ["admin"],
+  },
 ];
 
 export function navItemsForRole(rol: RolUsuario): InternalNavItem[] {
@@ -30,5 +36,5 @@ export function navItemsForRole(rol: RolUsuario): InternalNavItem[] {
 
 export const rolLabels: Record<RolUsuario, string> = {
   admin: "Administración",
-  jurado: "Jurado calificador",
+  jurado: "Jurado",
 };

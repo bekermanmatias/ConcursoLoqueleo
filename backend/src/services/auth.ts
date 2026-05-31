@@ -83,10 +83,93 @@ export function verifyToken(token: string): AuthTokenPayload | null {
 }
 
 export async function listInternalUsers(): Promise<InternalUser[]> {
-  const result = await pool.query<UserRow>(
-    `SELECT id, nombre, email, password_hash, rol FROM usuarios_internos ORDER BY nombre`,
+  const result = await listInternalUsersPaginated({});
+  return result.items;
+}
+
+export const USERS_PAGE_SIZE_DEFAULT = 15;
+export const USERS_PAGE_SIZE_MAX = 100;
+
+export interface ListInternalUsersOptions {
+  q?: string;
+  rol?: RolUsuario;
+  page?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface InternalUsersListResult {
+  items: InternalUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+function resolveUsersPagination(options: {
+  page?: number;
+  limit?: number;
+  offset?: number;
+}): { page: number; limit: number; offset: number } {
+  const limit = Math.min(
+    Math.max(options.limit ?? USERS_PAGE_SIZE_DEFAULT, 1),
+    USERS_PAGE_SIZE_MAX,
   );
-  return result.rows.map(mapUser);
+
+  if (options.page !== undefined && options.page >= 1) {
+    const page = Math.floor(options.page);
+    return { page, limit, offset: (page - 1) * limit };
+  }
+
+  const offset = Math.max(options.offset ?? 0, 0);
+  const page = Math.floor(offset / limit) + 1;
+  return { page, limit, offset };
+}
+
+export async function listInternalUsersPaginated(
+  options: ListInternalUsersOptions = {},
+): Promise<InternalUsersListResult> {
+  const { page, limit, offset } = resolveUsersPagination(options);
+  const params: unknown[] = [];
+  const where: string[] = [];
+
+  if (options.q?.trim()) {
+    params.push(`%${options.q.trim()}%`);
+    const idx = params.length;
+    where.push(`(nombre ILIKE $${idx} OR email ILIKE $${idx})`);
+  }
+
+  if (options.rol) {
+    params.push(options.rol);
+    where.push(`rol = $${params.length}`);
+  }
+
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  const countResult = await pool.query<{ total: string }>(
+    `SELECT COUNT(*)::text AS total FROM usuarios_internos ${whereSql}`,
+    params,
+  );
+  const total = Number(countResult.rows[0]?.total ?? 0);
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  const listParams = [...params, limit, offset];
+  const result = await pool.query<UserRow>(
+    `SELECT id, nombre, email, password_hash, rol
+     FROM usuarios_internos
+     ${whereSql}
+     ORDER BY nombre ASC, id ASC
+     LIMIT $${listParams.length - 1} OFFSET $${listParams.length}`,
+    listParams,
+  );
+
+  return {
+    items: result.rows.map(mapUser),
+    total,
+    page,
+    limit,
+    totalPages,
+  };
 }
 
 export async function createInternalUser(input: {
@@ -103,4 +186,110 @@ export async function createInternalUser(input: {
     [input.nombre.trim(), input.email.trim().toLowerCase(), hash, input.rol],
   );
   return mapUser(result.rows[0]);
+}
+
+export async function countAdminUsers(): Promise<number> {
+  const result = await pool.query<{ total: string }>(
+    `SELECT COUNT(*)::text AS total FROM usuarios_internos WHERE rol = 'admin'`,
+  );
+  return Number(result.rows[0]?.total ?? 0);
+}
+
+export async function countUserEvaluaciones(userId: number): Promise<number> {
+  const result = await pool.query<{ total: string }>(
+    `SELECT COUNT(*)::text AS total FROM evaluaciones WHERE jurado_id = $1`,
+    [userId],
+  );
+  return Number(result.rows[0]?.total ?? 0);
+}
+
+export async function updateInternalUser(
+  id: number,
+  input: {
+    nombre?: string;
+    email?: string;
+    rol?: RolUsuario;
+    password?: string;
+  },
+): Promise<InternalUser | null> {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  let index = 1;
+
+  if (input.nombre !== undefined) {
+    fields.push(`nombre = $${index++}`);
+    values.push(input.nombre.trim());
+  }
+  if (input.email !== undefined) {
+    fields.push(`email = $${index++}`);
+    values.push(input.email.trim().toLowerCase());
+  }
+  if (input.rol !== undefined) {
+    fields.push(`rol = $${index++}`);
+    values.push(input.rol);
+  }
+  if (input.password) {
+    const hash = await bcrypt.hash(input.password, 10);
+    fields.push(`password_hash = $${index++}`);
+    values.push(hash);
+  }
+
+  if (fields.length === 0) {
+    return findUserById(id);
+  }
+
+  values.push(id);
+  const result = await pool.query<UserRow>(
+    `UPDATE usuarios_internos SET ${fields.join(", ")}
+     WHERE id = $${index}
+     RETURNING id, nombre, email, password_hash, rol`,
+    values,
+  );
+  const row = result.rows[0];
+  return row ? mapUser(row) : null;
+}
+
+export type DeleteInternalUserResult =
+  | { ok: true }
+  | { ok: false; error: string; status: number };
+
+export async function deleteInternalUser(
+  id: number,
+  actorId: number,
+): Promise<DeleteInternalUserResult> {
+  if (id === actorId) {
+    return { ok: false, error: "No puedes eliminar tu propia cuenta.", status: 400 };
+  }
+
+  const user = await findUserById(id);
+  if (!user) {
+    return { ok: false, error: "Usuario no encontrado.", status: 404 };
+  }
+
+  if (user.rol === "admin") {
+    const admins = await countAdminUsers();
+    if (admins <= 1) {
+      return {
+        ok: false,
+        error: "Debe quedar al menos un administrador.",
+        status: 400,
+      };
+    }
+  }
+
+  const evaluaciones = await countUserEvaluaciones(id);
+  if (evaluaciones > 0) {
+    return {
+      ok: false,
+      error: "Este usuario tiene evaluaciones registradas y no puede eliminarse.",
+      status: 409,
+    };
+  }
+
+  const result = await pool.query(`DELETE FROM usuarios_internos WHERE id = $1`, [id]);
+  if ((result.rowCount ?? 0) === 0) {
+    return { ok: false, error: "Usuario no encontrado.", status: 404 };
+  }
+
+  return { ok: true };
 }

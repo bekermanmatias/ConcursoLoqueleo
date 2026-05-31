@@ -1,7 +1,14 @@
 import { Router, type Request } from "express";
 import path from "node:path";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { createInternalUser, listInternalUsers } from "../services/auth.js";
+import {
+  countAdminUsers,
+  createInternalUser,
+  deleteInternalUser,
+  findUserById,
+  listInternalUsersPaginated,
+  updateInternalUser,
+} from "../services/auth.js";
 import {
   bulkDeleteTrabajos,
   bulkUpdateTrabajosEstado,
@@ -78,6 +85,7 @@ function parseListTrabajosQuery(req: Request) {
     fechaDesde: parseDateParam(req.query.fechaDesde),
     fechaHasta: parseDateParam(req.query.fechaHasta),
     evaluacion,
+    page: parseOptionalInt(req.query.page),
     limit: parseOptionalInt(req.query.limit),
     offset: parseOptionalInt(req.query.offset),
   };
@@ -105,8 +113,23 @@ internalRouter.get("/stats", requireRole("admin"), async (_req, res) => {
   res.json(await getInternalStats());
 });
 
-internalRouter.get("/usuarios", requireRole("admin"), async (_req, res) => {
-  res.json({ items: await listInternalUsers() });
+internalRouter.get("/usuarios", requireRole("admin"), async (req, res) => {
+  const rolRaw = req.query.rol ? String(req.query.rol) : undefined;
+  const rol = rolRaw ? parseRol(rolRaw) : undefined;
+  if (rolRaw && !rol) {
+    res.status(400).json({ error: "Rol inválido." });
+    return;
+  }
+
+  const data = await listInternalUsersPaginated({
+    q: req.query.q ? String(req.query.q) : undefined,
+    rol,
+    page: parseOptionalInt(req.query.page),
+    limit: parseOptionalInt(req.query.limit),
+    offset: parseOptionalInt(req.query.offset),
+  });
+
+  res.json(data);
 });
 
 internalRouter.post("/usuarios", requireRole("admin"), async (req, res) => {
@@ -120,12 +143,135 @@ internalRouter.post("/usuarios", requireRole("admin"), async (req, res) => {
     return;
   }
 
+  if (password.length < 6) {
+    res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
+    return;
+  }
+
   try {
     const user = await createInternalUser({ nombre, email, password, rol });
     res.status(201).json(user);
   } catch {
     res.status(409).json({ error: "Ya existe un usuario con ese email." });
   }
+});
+
+function parseRol(value: unknown): RolUsuario | null {
+  const rol = String(value ?? "");
+  return rol === "admin" || rol === "jurado" ? rol : null;
+}
+
+async function assertCanDemoteAdmin(
+  userId: number,
+  nextRol: RolUsuario,
+): Promise<string | null> {
+  if (nextRol === "admin") return null;
+  const user = await findUserById(userId);
+  if (!user || user.rol !== "admin") return null;
+  const admins = await countAdminUsers();
+  if (admins <= 1) {
+    return "Debe quedar al menos un administrador.";
+  }
+  return null;
+}
+
+internalRouter.patch("/usuarios/:id(\\d+)", requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: "ID inválido." });
+    return;
+  }
+
+  const existing = await findUserById(id);
+  if (!existing) {
+    res.status(404).json({ error: "Usuario no encontrado." });
+    return;
+  }
+
+  const nombreRaw = req.body.nombre;
+  const emailRaw = req.body.email;
+  const rolRaw = req.body.rol;
+  const passwordRaw = req.body.password;
+
+  const patch: {
+    nombre?: string;
+    email?: string;
+    rol?: RolUsuario;
+    password?: string;
+  } = {};
+
+  if (nombreRaw !== undefined) {
+    const nombre = String(nombreRaw).trim();
+    if (!nombre) {
+      res.status(400).json({ error: "El nombre es obligatorio." });
+      return;
+    }
+    patch.nombre = nombre;
+  }
+
+  if (emailRaw !== undefined) {
+    const email = String(emailRaw).trim();
+    if (!email) {
+      res.status(400).json({ error: "El email es obligatorio." });
+      return;
+    }
+    patch.email = email;
+  }
+
+  if (rolRaw !== undefined) {
+    const rol = parseRol(rolRaw);
+    if (!rol) {
+      res.status(400).json({ error: "Rol inválido." });
+      return;
+    }
+    const demoteError = await assertCanDemoteAdmin(id, rol);
+    if (demoteError) {
+      res.status(400).json({ error: demoteError });
+      return;
+    }
+    patch.rol = rol;
+  }
+
+  if (passwordRaw !== undefined && passwordRaw !== null && String(passwordRaw).length > 0) {
+    const password = String(passwordRaw);
+    if (password.length < 6) {
+      res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
+      return;
+    }
+    patch.password = password;
+  }
+
+  if (Object.keys(patch).length === 0) {
+    res.status(400).json({ error: "No hay cambios para guardar." });
+    return;
+  }
+
+  try {
+    const user = await updateInternalUser(id, patch);
+    if (!user) {
+      res.status(404).json({ error: "Usuario no encontrado." });
+      return;
+    }
+    res.json(user);
+  } catch {
+    res.status(409).json({ error: "Ya existe un usuario con ese email." });
+  }
+});
+
+internalRouter.delete("/usuarios/:id(\\d+)", requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: "ID inválido." });
+    return;
+  }
+
+  const result = await deleteInternalUser(id, req.user!.id);
+  if (!result.ok) {
+    res.status(result.status).json({ error: result.error });
+    return;
+  }
+
+  res.status(204).send();
 });
 
 internalRouter.get("/trabajos/filtros", requireRole("admin", "jurado"), async (_req, res) => {
@@ -154,6 +300,7 @@ internalRouter.get("/trabajos", requireRole("admin", "jurado"), async (req, res)
     fechaHasta: query.fechaHasta,
     evaluacion: query.evaluacion,
     juradoId: query.evaluacion ? req.user!.id : undefined,
+    page: query.page,
     limit: query.limit,
     offset: query.offset,
   });

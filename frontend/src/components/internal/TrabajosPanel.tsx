@@ -8,20 +8,20 @@ import {
   fetchTrabajosFiltros,
   openTrabajoArchivo,
   tipoArchivoLabels,
+  TRABAJOS_PAGE_SIZE,
   updateTrabajoEstado,
   type EstadoTrabajo,
   type EvaluacionFiltro,
   type TrabajoListItem,
   type TrabajosFilterOptions,
 } from "../../lib/internal-api";
-import { getStoredUser } from "../../lib/auth";
 import { useInternalToast } from "../../lib/internal-toast";
 
 const ESTADOS: (EstadoTrabajo | "")[] = ["", "recibido", "en_revision", "finalista", "ganador"];
 const ESTADOS_TRABAJO: EstadoTrabajo[] = ["recibido", "en_revision", "finalista", "ganador"];
 const EVALUACIONES: (EvaluacionFiltro | "")[] = ["", "pendiente", "evaluado"];
+const PAGE_SIZE = TRABAJOS_PAGE_SIZE;
 
-const QUICK_FILTER_KEYS = ["gradoId", "estado"] as const;
 const ADVANCED_FILTER_KEYS = [
   "evaluacion",
   "libro",
@@ -89,12 +89,24 @@ function countAdvancedFilters(filters: TrabajosFilters) {
   return ADVANCED_FILTER_KEYS.filter((key) => filters[key] !== "").length;
 }
 
+function formatFechaEnvio(iso: string): string {
+  const date = new Date(iso);
+  return date.toLocaleString("es-PE", {
+    day: "numeric",
+    month: "numeric",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function TrabajosPanel() {
-  const user = getStoredUser();
   const { showToast } = useInternalToast();
   const filtersRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<TrabajoListItem[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<TrabajosFilters>(EMPTY_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<TrabajosFilters>(EMPTY_FILTERS);
   const [filterOptions, setFilterOptions] = useState<TrabajosFilterOptions | null>(null);
@@ -152,26 +164,32 @@ export default function TrabajosPanel() {
     }
   }, [showToast]);
 
-  const load = useCallback(async (nextFilters: TrabajosFilters = appliedFilters) => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchTrabajos(filtersToParams(nextFilters));
+      const data = await fetchTrabajos({
+        ...filtersToParams(appliedFilters),
+        page,
+        limit: PAGE_SIZE,
+      });
       setItems(data.items);
       setTotal(data.total);
+      setTotalPages(data.totalPages);
+      if (data.page !== page) setPage(data.page);
     } catch (err) {
       showToast("error", err instanceof Error ? err.message : "Error al cargar trabajos.");
     } finally {
       setLoading(false);
     }
-  }, [appliedFilters, showToast]);
+  }, [appliedFilters, page, showToast]);
 
   useEffect(() => {
     void loadOptions();
   }, [loadOptions]);
 
   useEffect(() => {
-    void load(appliedFilters);
-  }, [appliedFilters, load]);
+    void load();
+  }, [load]);
 
   useEffect(() => {
     setSelectedIds((current) => {
@@ -203,6 +221,7 @@ export default function TrabajosPanel() {
   }, [filtersOpen]);
 
   const applyFilters = () => {
+    setPage(1);
     setAppliedFilters(filters);
     setFiltersOpen(false);
   };
@@ -220,15 +239,8 @@ export default function TrabajosPanel() {
     });
   };
 
-  const updateQuickFilter = <K extends (typeof QUICK_FILTER_KEYS)[number]>(
-    key: K,
-    value: TrabajosFilters[K],
-  ) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setAppliedFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
   const clearFilters = () => {
+    setPage(1);
     setFilters(EMPTY_FILTERS);
     setAppliedFilters(EMPTY_FILTERS);
     setFiltersOpen(false);
@@ -328,8 +340,18 @@ export default function TrabajosPanel() {
     const ids = [...selectedIds];
     try {
       const result = await bulkDeleteTrabajos(ids, deleteConfirmText);
-      setItems((current) => current.filter((item) => !selectedIds.has(item.id)));
-      setTotal((current) => Math.max(0, current - result.deleted));
+      const nextTotal = Math.max(0, total - result.deleted);
+      const maxPage = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+      const nextPage = Math.min(page, maxPage);
+      const data = await fetchTrabajos({
+        ...filtersToParams(appliedFilters),
+        page: nextPage,
+        limit: PAGE_SIZE,
+      });
+      setPage(data.page);
+      setItems(data.items);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
       setSelectedIds(new Set());
       setDeleteModalOpen(false);
       setDeleteConfirmText("");
@@ -349,27 +371,32 @@ export default function TrabajosPanel() {
     [appliedFilters],
   );
 
+  const totalPagesDisplay = totalPages || Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const pageEnd = Math.min(page * PAGE_SIZE, total);
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   return (
-    <div className="internal-panel">
-      <header className="internal-header">
-        <div>
-          <h1 className="internal-title">Trabajos recibidos</h1>
-          <p className="internal-subtitle">
-            {user?.nombre} · {total} entrega{total === 1 ? "" : "s"}
-          </p>
-        </div>
+    <div className="internal-panel internal-panel--dense">
+      <header className="internal-header internal-header--compact">
+        <h1 className="internal-title">
+          Trabajos recibidos
+          <span className="internal-title__meta">
+            {total} entrega{total === 1 ? "" : "s"}
+          </span>
+        </h1>
       </header>
 
-      <section className="internal-search-toolbar" aria-label="Filtros de búsqueda" ref={filtersRef}>
+      <section className="internal-search-toolbar internal-search-toolbar--compact" aria-label="Filtros de búsqueda" ref={filtersRef}>
         <div className="internal-search-bar">
           <input
             type="search"
             placeholder="Buscar por DNI, nombre, código, libro o colegio…"
             value={filters.q}
             onChange={(e) => updateFilter("q", e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") applyFilters();
-            }}
             className="form-field internal-search-bar__input"
             aria-label="Buscar trabajos"
           />
@@ -378,7 +405,7 @@ export default function TrabajosPanel() {
             <span className="sr-only">Grado</span>
             <select
               value={filters.gradoId}
-              onChange={(e) => updateQuickFilter("gradoId", e.target.value)}
+              onChange={(e) => updateFilter("gradoId", e.target.value)}
               className="form-field internal-quick-filter__select"
               disabled={optionsLoading}
               aria-label="Filtrar por grado"
@@ -396,7 +423,7 @@ export default function TrabajosPanel() {
             <span className="sr-only">Estado</span>
             <select
               value={filters.estado}
-              onChange={(e) => updateQuickFilter("estado", e.target.value as EstadoTrabajo | "")}
+              onChange={(e) => updateFilter("estado", e.target.value as EstadoTrabajo | "")}
               className="form-field internal-quick-filter__select"
               aria-label="Filtrar por estado"
             >
@@ -702,8 +729,8 @@ export default function TrabajosPanel() {
             </div>
           )}
 
-          <div className="internal-table-wrap">
-          <table className="internal-table">
+          <div className="internal-table-wrap internal-table-wrap--scroll">
+          <table className="internal-table internal-table--dense">
             <thead>
               <tr>
                 <th className="internal-table-check">
@@ -740,10 +767,14 @@ export default function TrabajosPanel() {
                       aria-label={`Seleccionar ${item.concursante}`}
                     />
                   </td>
-                  <td>{item.codigoEntrega}</td>
-                  <td>{item.concursante}</td>
-                  <td>{item.bookTitle}</td>
-                  <td>{item.grado}</td>
+                  <td className="internal-cell-nowrap">{item.codigoEntrega}</td>
+                  <td className="internal-cell-truncate" title={item.concursante}>
+                    {item.concursante}
+                  </td>
+                  <td className="internal-cell-truncate internal-cell-truncate--book" title={item.bookTitle}>
+                    {item.bookTitle}
+                  </td>
+                  <td className="internal-cell-nowrap">{item.grado}</td>
                   <td>
                     <select
                       value={item.estado}
@@ -761,7 +792,7 @@ export default function TrabajosPanel() {
                       ))}
                     </select>
                   </td>
-                  <td>{new Date(item.fechaEnvio).toLocaleString("es-PE")}</td>
+                  <td className="internal-cell-nowrap">{formatFechaEnvio(item.fechaEnvio)}</td>
                   <td>
                     <div className="internal-table-actions">
                       <button
@@ -785,6 +816,35 @@ export default function TrabajosPanel() {
             </tbody>
           </table>
         </div>
+
+          <nav className="internal-pagination" aria-label="Paginación de trabajos">
+            <p className="internal-pagination__info">
+              {total === 0
+                ? "Sin resultados"
+                : `Mostrando ${pageStart}–${pageEnd} de ${total}`}
+            </p>
+            <div className="internal-pagination__actions">
+              <button
+                type="button"
+                className="internal-btn internal-btn--outline"
+                disabled={loading || page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Anterior
+              </button>
+              <span className="internal-pagination__page">
+                Página {total === 0 ? 0 : page} de {total === 0 ? 0 : totalPagesDisplay}
+              </span>
+              <button
+                type="button"
+                className="internal-btn internal-btn--outline"
+                disabled={loading || page >= totalPagesDisplay || total === 0}
+                onClick={() => setPage((p) => Math.min(totalPagesDisplay, p + 1))}
+              >
+                Siguiente
+              </button>
+            </div>
+          </nav>
         </>
       )}
 

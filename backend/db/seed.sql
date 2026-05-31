@@ -131,6 +131,120 @@ JOIN retos r ON r.nombre_obra = 'La lonchera mentirosa'
 WHERE p.dni_estudiante = '11223344'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
 
+-- Trabajos demo DEMO004–DEMO030 (27 adicionales; 30 en total con DEMO001–003)
+WITH nums AS (
+  SELECT n FROM generate_series(4, 30) AS n
+),
+colegios_list AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn, COUNT(*) OVER ()::int AS total FROM colegios
+),
+grados_list AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn, COUNT(*) OVER ()::int AS total FROM grados
+),
+prep AS (
+  SELECT
+    n.n,
+    LPAD((90000000 + n.n)::text, 8, '0') AS dni_estudiante,
+    'Estudiante Demo ' || LPAD(n.n::text, 2, '0') AS concursante,
+    CASE WHEN n.n % 2 = 0 THEN 'M'::sexo ELSE 'F'::sexo END AS sexo,
+    'Apoderado Demo ' || LPAD(n.n::text, 2, '0') AS apoderado,
+    LPAD((91000000 + n.n)::text, 8, '0') AS dni_apoderado,
+    '99' || LPAD((900000 + n.n)::text, 7, '0') AS celular_apoderado,
+    'Prof. Docente Demo ' || LPAD(n.n::text, 2, '0') AS docente,
+    'docente' || LPAD(n.n::text, 2, '0') || '@demo.edu.pe' AS email_docente,
+    'LQL2026-DEMO' || LPAD(n.n::text, 3, '0') AS codigo_entrega,
+    cl.id AS colegio_id,
+    gl.id AS grado_id,
+    (ARRAY['recibido', 'en_revision', 'finalista', 'ganador'])[1 + ((n.n - 4) % 4)] AS estado,
+    (
+      '2026-05-' || LPAD((1 + ((n.n - 4) % 28))::text, 2, '0')
+      || 'T' || LPAD((8 + ((n.n * 3) % 12))::text, 2, '0') || ':00:00Z'
+    )::timestamptz AS fecha_envio,
+    CASE WHEN n.n % 2 = 0 THEN 'pdf'::tipo_archivo ELSE 'mp4'::tipo_archivo END AS tipo_archivo,
+    CASE
+      WHEN n.n % 2 = 0 THEN 'local://entregables/demo/carta-borrador.pdf'
+      ELSE 'local://entregables/demo/recomendacion-libros.mp4'
+    END AS trabajo_enlace,
+    (n.n % 5 = 0) AS permite_reenvio
+  FROM nums n
+  JOIN colegios_list cl ON cl.rn = 1 + ((n.n - 4) % cl.total)
+  JOIN grados_list gl ON gl.rn = 1 + ((n.n - 4) % gl.total)
+),
+prep_reto AS (
+  SELECT p.*, r.id AS reto_id
+  FROM prep p
+  JOIN retos r ON r.grado_id = p.grado_id
+)
+INSERT INTO participantes (
+  dni_estudiante, concursante, sexo,
+  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  colegio_id, grado_id
+)
+SELECT
+  dni_estudiante, concursante, sexo,
+  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  colegio_id, grado_id
+FROM prep_reto pr
+WHERE NOT EXISTS (
+  SELECT 1 FROM participantes p WHERE p.dni_estudiante = pr.dni_estudiante
+);
+
+WITH nums AS (
+  SELECT n FROM generate_series(4, 30) AS n
+),
+colegios_list AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn, COUNT(*) OVER ()::int AS total FROM colegios
+),
+grados_list AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn, COUNT(*) OVER ()::int AS total FROM grados
+),
+prep AS (
+  SELECT
+    n.n,
+    LPAD((90000000 + n.n)::text, 8, '0') AS dni_estudiante,
+    'LQL2026-DEMO' || LPAD(n.n::text, 3, '0') AS codigo_entrega,
+    cl.id AS colegio_id,
+    gl.id AS grado_id,
+    (ARRAY['recibido', 'en_revision', 'finalista', 'ganador'])[1 + ((n.n - 4) % 4)] AS estado,
+    (
+      '2026-05-' || LPAD((1 + ((n.n - 4) % 28))::text, 2, '0')
+      || 'T' || LPAD((8 + ((n.n * 3) % 12))::text, 2, '0') || ':00:00Z'
+    )::timestamptz AS fecha_envio,
+    CASE WHEN n.n % 2 = 0 THEN 'pdf'::tipo_archivo ELSE 'mp4'::tipo_archivo END AS tipo_archivo,
+    CASE
+      WHEN n.n % 2 = 0 THEN 'local://entregables/demo/carta-borrador.pdf'
+      ELSE 'local://entregables/demo/recomendacion-libros.mp4'
+    END AS trabajo_enlace,
+    (n.n % 5 = 0) AS permite_reenvio
+  FROM nums n
+  JOIN colegios_list cl ON cl.rn = 1 + ((n.n - 4) % cl.total)
+  JOIN grados_list gl ON gl.rn = 1 + ((n.n - 4) % gl.total)
+),
+prep_reto AS (
+  SELECT p.*, r.id AS reto_id
+  FROM prep p
+  JOIN retos r ON r.grado_id = p.grado_id
+)
+INSERT INTO trabajos (
+  codigo_concurso, codigo_entrega, participante_id, reto_id,
+  trabajo_enlace, tipo_archivo, fecha_envio, estado, permite_reenvio
+)
+SELECT
+  'LQL2026',
+  pr.codigo_entrega,
+  p.id,
+  pr.reto_id,
+  pr.trabajo_enlace,
+  pr.tipo_archivo,
+  pr.fecha_envio,
+  pr.estado::estado_trabajo,
+  pr.permite_reenvio
+FROM prep_reto pr
+JOIN participantes p ON p.dni_estudiante = pr.dni_estudiante
+WHERE NOT EXISTS (
+  SELECT 1 FROM trabajos t WHERE t.codigo_entrega = pr.codigo_entrega
+);
+
 -- Usuarios internos demo (admin123 / jurado123)
 INSERT INTO usuarios_internos (nombre, email, password_hash, rol) VALUES
   (

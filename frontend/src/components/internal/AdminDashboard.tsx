@@ -2,16 +2,15 @@ import { useEffect, useState } from "react";
 import {
   estadoLabels,
   fetchInternalStats,
-  fetchInternalUsers,
   type InternalStats,
 } from "../../lib/internal-api";
-import { getStoredUser, type InternalUser } from "../../lib/auth";
+import { getStoredUser } from "../../lib/auth";
 import { useInternalToast } from "../../lib/internal-toast";
+import EntregasDiariasChart from "./EntregasDiariasChart";
 
 export default function AdminDashboard() {
   const { showToast } = useInternalToast();
   const [stats, setStats] = useState<InternalStats | null>(null);
-  const [users, setUsers] = useState<InternalUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +22,8 @@ export default function AdminDashboard() {
 
     const load = async () => {
       try {
-        const [statsData, usersData] = await Promise.all([
-          fetchInternalStats(),
-          fetchInternalUsers(),
-        ]);
+        const statsData = await fetchInternalStats();
         setStats(statsData);
-        setUsers(usersData.items);
       } catch (err) {
         showToast("error", err instanceof Error ? err.message : "Error al cargar el panel.");
       } finally {
@@ -40,57 +35,40 @@ export default function AdminDashboard() {
   }, [showToast]);
 
   return (
-    <div className="internal-panel">
-      <header className="internal-header">
-        <div>
-          <h1 className="internal-title">Resumen del concurso</h1>
-          <p className="internal-subtitle">Métricas generales y usuarios del panel.</p>
-        </div>
+    <div className="internal-panel internal-panel--dense">
+      <header className="internal-header internal-header--compact">
+        <h1 className="internal-title">Resumen del concurso</h1>
+        <p className="internal-subtitle internal-subtitle--compact">
+          Cuántos participantes hay y cómo avanza el concurso en tiempo real.
+        </p>
       </header>
 
       {loading && <p className="internal-muted">Cargando…</p>}
 
       {stats && (
-        <div className="internal-stats-grid">
-          <article className="internal-stat-card">
-            <p className="internal-stat-label">Total entregas</p>
-            <p className="internal-stat-value">{stats.totalTrabajos}</p>
-          </article>
-          {(Object.keys(stats.porEstado) as Array<keyof InternalStats["porEstado"]>).map((estado) => (
-            <article key={estado} className="internal-stat-card">
-              <p className="internal-stat-label">{estadoLabels[estado]}</p>
-              <p className="internal-stat-value">{stats.porEstado[estado]}</p>
+        <>
+          <div className="internal-stats-grid">
+            <article className="internal-stat-card">
+              <p className="internal-stat-label">Participantes</p>
+              <p className="internal-stat-value">{stats.totalParticipantes ?? 0}</p>
             </article>
-          ))}
-        </div>
-      )}
+            <article className="internal-stat-card">
+              <p className="internal-stat-label">Total entregas</p>
+              <p className="internal-stat-value">{stats.totalTrabajos}</p>
+            </article>
+            {(Object.keys(stats.porEstado) as Array<keyof InternalStats["porEstado"]>).map(
+              (estado) => (
+                <article key={estado} className="internal-stat-card">
+                  <p className="internal-stat-label">{estadoLabels[estado]}</p>
+                  <p className="internal-stat-value">{stats.porEstado[estado]}</p>
+                </article>
+              ),
+            )}
+          </div>
 
-      <section className="internal-card internal-card--wide">
-        <h2>Usuarios internos</h2>
-        <div className="internal-table-wrap">
-          <table className="internal-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.nombre}</td>
-                  <td>{user.email}</td>
-                  <td>{user.rol}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="internal-muted internal-mt">
-          Creación de usuarios vía API <code>POST /api/internal/usuarios</code> (próximo formulario en UI).
-        </p>
-      </section>
+          <EntregasDiariasChart data={stats.entregasPorDia ?? []} />
+        </>
+      )}
     </div>
   );
 }
