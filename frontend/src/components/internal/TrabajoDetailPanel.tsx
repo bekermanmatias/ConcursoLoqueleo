@@ -375,6 +375,8 @@ export default function TrabajoDetailPanel({ trabajoId: trabajoIdProp }: Props) 
 
           <DetailGroup title="Entrega">
             <DetailRow label="Libro / reto" value={trabajo.bookTitle} />
+            <DetailRow label="Nombres" value={trabajo.concursanteNombres} />
+            <DetailRow label="Apellidos" value={trabajo.concursanteApellidos} />
             <DetailRow label="DNI" value={trabajo.dni} />
             <DetailRow label="Sexo" value={trabajo.sexo === "F" ? "Femenino" : "Masculino"} />
             <DetailRow
@@ -390,13 +392,15 @@ export default function TrabajoDetailPanel({ trabajoId: trabajoIdProp }: Props) 
           </DetailGroup>
 
           <DetailGroup title="Apoderado">
-            <DetailRow label="Nombre" value={trabajo.apoderado} />
+            <DetailRow label="Nombres" value={trabajo.apoderadoNombres} />
+            <DetailRow label="Apellidos" value={trabajo.apoderadoApellidos} />
             <DetailRow label="DNI" value={trabajo.dniApoderado} />
             <DetailRow label="Celular" value={trabajo.celularApoderado} />
           </DetailGroup>
 
           <DetailGroup title="Docente">
-            <DetailRow label="Nombre" value={trabajo.docente} />
+            <DetailRow label="Nombres" value={trabajo.docenteNombres} />
+            <DetailRow label="Apellidos" value={trabajo.docenteApellidos} />
             <DetailRow label="Email" value={trabajo.emailDocente} />
           </DetailGroup>
         </section>

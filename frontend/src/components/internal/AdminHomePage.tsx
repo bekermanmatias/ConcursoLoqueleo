@@ -3,7 +3,7 @@ import AdminDashboard from "./AdminDashboard";
 
 export default function AdminHomePage() {
   return (
-    <InternalAppShell activeNav="resumen">
+    <InternalAppShell activeNav="dashboard">
       <AdminDashboard />
     </InternalAppShell>
   );

@@ -1,4 +1,5 @@
 import { pool } from "../db/pool.js";
+import { joinPersonName } from "../utils/person-name.js";
 import type {
   EstadoTrabajo,
   InternalStats,
@@ -26,12 +27,15 @@ const BASE_SELECT = `
     t.fecha_envio,
     t.permite_reenvio,
     p.dni_estudiante AS dni,
-    p.concursante,
+    p.concursante_nombres,
+    p.concursante_apellidos,
     p.sexo,
-    p.apoderado,
+    p.apoderado_nombres,
+    p.apoderado_apellidos,
     p.dni_apoderado,
     p.celular_apoderado,
-    p.docente,
+    p.docente_nombres,
+    p.docente_apellidos,
     p.email_docente,
     r.nombre_obra,
     co.book_slug,
@@ -60,12 +64,15 @@ interface TrabajoRow {
   fecha_envio: Date;
   permite_reenvio: boolean;
   dni: string;
-  concursante: string;
+  concursante_nombres: string;
+  concursante_apellidos: string;
   sexo: "M" | "F";
-  apoderado: string;
+  apoderado_nombres: string;
+  apoderado_apellidos: string;
   dni_apoderado: string;
   celular_apoderado: string;
-  docente: string;
+  docente_nombres: string;
+  docente_apellidos: string;
   email_docente: string;
   nombre_obra: string;
   book_slug: string | null;
@@ -82,7 +89,7 @@ function mapListItem(row: TrabajoRow): TrabajoListItem {
     id: row.id,
     codigoEntrega: row.codigo_entrega,
     dni: row.dni,
-    concursante: row.concursante,
+    concursante: joinPersonName(row.concursante_nombres, row.concursante_apellidos),
     bookTitle: row.nombre_obra,
     bookId: row.book_slug ?? row.nombre_obra,
     colegio: row.colegio,
@@ -175,7 +182,7 @@ function buildListTrabajosWhere(options: ListTrabajosOptions): {
     params.push(`%${options.q.trim()}%`);
     const idx = params.length;
     where.push(
-      `(p.dni_estudiante ILIKE $${idx} OR p.concursante ILIKE $${idx} OR t.codigo_entrega ILIKE $${idx} OR r.nombre_obra ILIKE $${idx} OR c.nombre ILIKE $${idx})`,
+      `(p.dni_estudiante ILIKE $${idx} OR (p.concursante_nombres || ' ' || p.concursante_apellidos) ILIKE $${idx} OR t.codigo_entrega ILIKE $${idx} OR r.nombre_obra ILIKE $${idx} OR c.nombre ILIKE $${idx})`,
     );
   }
 
@@ -335,11 +342,17 @@ export async function getTrabajoById(id: number): Promise<TrabajoDetail | null> 
 
   return {
     ...mapListItem(row),
+    concursanteNombres: row.concursante_nombres,
+    concursanteApellidos: row.concursante_apellidos,
     sexo: row.sexo,
-    apoderado: row.apoderado,
+    apoderadoNombres: row.apoderado_nombres,
+    apoderadoApellidos: row.apoderado_apellidos,
+    apoderado: joinPersonName(row.apoderado_nombres, row.apoderado_apellidos),
     dniApoderado: row.dni_apoderado,
     celularApoderado: row.celular_apoderado,
-    docente: row.docente,
+    docenteNombres: row.docente_nombres,
+    docenteApellidos: row.docente_apellidos,
+    docente: joinPersonName(row.docente_nombres, row.docente_apellidos),
     emailDocente: row.email_docente,
     trabajoEnlace: row.trabajo_enlace,
     evaluacion: null,

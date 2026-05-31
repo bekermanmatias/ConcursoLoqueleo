@@ -110,6 +110,15 @@ export default function HelpLookup() {
 
           <dl className="help-result-details">
             <div>
+              <dt>Participante</dt>
+              <dd>
+                {result.concursante ||
+                  [result.concursanteNombres, result.concursanteApellidos]
+                    .filter(Boolean)
+                    .join(" ")}
+              </dd>
+            </div>
+            <div>
               <dt>Estado</dt>
               <dd>
                 {submissionStatusLabels[result.estado].label}.{" "}

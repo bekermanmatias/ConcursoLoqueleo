@@ -51,13 +51,14 @@ ON CONFLICT (codigo_colegio) DO NOTHING;
 
 -- Participantes demo (Ayuda)
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo,
-  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+  apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+  docente_nombres, docente_apellidos, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '12345678', 'Ana Demo García', 'F',
-  'Rosa García', '45678901', '999111222', 'Prof. Carmen López', 'clopez@demo.edu.pe',
+  '12345678', 'Ana', 'Demo García', 'F',
+  'Rosa', 'García', '45678901', '999111222', 'Carmen', 'López', 'clopez@demo.edu.pe',
   c.id, g.id
 FROM colegios c
 JOIN grados g ON g.nombre = '1ro' AND g.nivel = 'primaria'
@@ -78,13 +79,14 @@ WHERE p.dni_estudiante = '12345678'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
 
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo,
-  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+  apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+  docente_nombres, docente_apellidos, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '87654321', 'Luis Demo Torres', 'M',
-  'Pedro Torres', '56789012', '999333444', 'Prof. Ana Ruiz', 'aruiz@demo.edu.pe',
+  '87654321', 'Luis', 'Demo Torres', 'M',
+  'Pedro', 'Torres', '56789012', '999333444', 'Ana', 'Ruiz', 'aruiz@demo.edu.pe',
   c.id, g.id
 FROM colegios c
 JOIN grados g ON g.nombre = '3ro' AND g.nivel = 'primaria'
@@ -105,13 +107,14 @@ WHERE p.dni_estudiante = '87654321'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
 
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo,
-  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+  apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+  docente_nombres, docente_apellidos, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  '11223344', 'María Demo Quispe', 'F',
-  'Juana Quispe', '67890123', '999555666', 'Prof. Luis Vega', 'lvega@demo.edu.pe',
+  '11223344', 'María', 'Demo Quispe', 'F',
+  'Juana', 'Quispe', '67890123', '999555666', 'Luis', 'Vega', 'lvega@demo.edu.pe',
   c.id, g.id
 FROM colegios c
 JOIN grados g ON g.nombre = '2do' AND g.nivel = 'primaria'
@@ -145,12 +148,15 @@ prep AS (
   SELECT
     n.n,
     LPAD((90000000 + n.n)::text, 8, '0') AS dni_estudiante,
-    'Estudiante Demo ' || LPAD(n.n::text, 2, '0') AS concursante,
+    'Estudiante' AS concursante_nombres,
+    'Demo ' || LPAD(n.n::text, 2, '0') AS concursante_apellidos,
     CASE WHEN n.n % 2 = 0 THEN 'M'::sexo ELSE 'F'::sexo END AS sexo,
-    'Apoderado Demo ' || LPAD(n.n::text, 2, '0') AS apoderado,
+    'Apoderado' AS apoderado_nombres,
+    'Demo ' || LPAD(n.n::text, 2, '0') AS apoderado_apellidos,
     LPAD((91000000 + n.n)::text, 8, '0') AS dni_apoderado,
     '99' || LPAD((900000 + n.n)::text, 7, '0') AS celular_apoderado,
-    'Prof. Docente Demo ' || LPAD(n.n::text, 2, '0') AS docente,
+    'Docente' AS docente_nombres,
+    'Demo ' || LPAD(n.n::text, 2, '0') AS docente_apellidos,
     'docente' || LPAD(n.n::text, 2, '0') || '@demo.edu.pe' AS email_docente,
     'LQL2026-DEMO' || LPAD(n.n::text, 3, '0') AS codigo_entrega,
     cl.id AS colegio_id,
@@ -176,13 +182,15 @@ prep_reto AS (
   JOIN retos r ON r.grado_id = p.grado_id
 )
 INSERT INTO participantes (
-  dni_estudiante, concursante, sexo,
-  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+  apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+  docente_nombres, docente_apellidos, email_docente,
   colegio_id, grado_id
 )
 SELECT
-  dni_estudiante, concursante, sexo,
-  apoderado, dni_apoderado, celular_apoderado, docente, email_docente,
+  dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+  apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+  docente_nombres, docente_apellidos, email_docente,
   colegio_id, grado_id
 FROM prep_reto pr
 WHERE NOT EXISTS (

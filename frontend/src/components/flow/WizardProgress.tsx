@@ -22,14 +22,14 @@ const stepConfig: Record<Step, StepConfig> = {
     title: "¿Desde qué colegio",
     titleAccent: "participas?",
     description:
-      "Elige tu colegio e indica el nombre y apellido del docente a cargo de tu aula.",
+      "Elige tu colegio e indica los datos de tu docente.",
   },
   3: {
     percent: 50,
     title: "¿Cuáles son tus",
     titleAccent: "datos?",
     description:
-      "Cuéntanos tu nombre y apellido, DNI y género tal como figuran en tu documento.",
+      "Cuéntanos tu nombre, apellido, DNI y género tal como figuran en tu documento.",
   },
   4: {
     percent: 68,

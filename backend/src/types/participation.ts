@@ -9,7 +9,10 @@ export interface ParticipationRecord {
   bookTitle: string;
   colegio: string;
   grado: string;
-  concursante?: string;
+  concursanteNombres: string;
+  concursanteApellidos: string;
+  /** Nombre completo (nombres + apellidos) para compatibilidad */
+  concursante: string;
   departamento?: string | null;
   provincia?: string | null;
   /** @deprecated Alias de provincia para compatibilidad */
@@ -34,23 +37,26 @@ export interface CreateParticipationInput {
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  concursante: string;
+  concursanteNombres: string;
+  concursanteApellidos: string;
   sexo: Sexo;
-  apoderado: string;
+  apoderadoNombres: string;
+  apoderadoApellidos: string;
   dniApoderado: string;
   celularApoderado: string;
-  docente: string;
+  docenteNombres: string;
+  docenteApellidos: string;
   emailDocente: string;
   fileName: string;
   fileUrl?: string;
   s3Key?: string;
 }
 
-interface ParticipationRow {
+export interface ParticipationRow {
   dni: string;
   codigo_entrega: string;
-  concursante: string;
-  book_slug: string | null;
+  concursante_nombres: string;
+  concursante_apellidos: string;
   nombre_obra: string;
   colegio: string;
   grado_nombre: string;
@@ -63,16 +69,23 @@ interface ParticipationRow {
   estado: EstadoTrabajo;
   permite_reenvio: boolean;
   fecha_envio: Date;
+  book_slug?: string | null;
 }
 
 export function mapRow(row: ParticipationRow): ParticipationRecord {
   const grado = `${row.grado_nombre} ${row.grado_nivel}`;
   const fileName = row.trabajo_enlace.split("/").pop() ?? row.trabajo_enlace;
+  const concursante = [row.concursante_nombres, row.concursante_apellidos]
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join(" ");
 
   return {
     dni: row.dni,
     code: row.codigo_entrega,
-    concursante: row.concursante,
+    concursanteNombres: row.concursante_nombres,
+    concursanteApellidos: row.concursante_apellidos,
+    concursante,
     bookId: row.book_slug ?? row.nombre_obra,
     bookTitle: row.nombre_obra,
     colegio: row.colegio,

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import FileDropzone from "./FileDropzone";
 import FormSelect from "./FormSelect";
+import PersonNameFields from "./PersonNameFields";
+import WizardAlert from "./WizardAlert";
+import { joinPersonName } from "../../lib/person-name";
 import { WizardJourneyHead, WizardProgressBar, type WizardStep } from "./WizardProgress";
 import {
   getParticipationErrorMessage,
@@ -56,13 +59,16 @@ export default function RegistrationWizard({
   const [ubigeoLoading, setUbigeoLoading] = useState(true);
   const [ubigeoError, setUbigeoError] = useState("");
   const [colegio, setColegio] = useState("");
-  const [concursante, setConcursante] = useState("");
+  const [concursanteNombres, setConcursanteNombres] = useState("");
+  const [concursanteApellidos, setConcursanteApellidos] = useState("");
   const [dni, setDni] = useState("");
   const [sexo, setSexo] = useState<Sexo | "">("");
-  const [apoderado, setApoderado] = useState("");
+  const [apoderadoNombres, setApoderadoNombres] = useState("");
+  const [apoderadoApellidos, setApoderadoApellidos] = useState("");
   const [dniApoderado, setDniApoderado] = useState("");
   const [celularApoderado, setCelularApoderado] = useState("");
-  const [docente, setDocente] = useState("");
+  const [docenteNombres, setDocenteNombres] = useState("");
+  const [docenteApellidos, setDocenteApellidos] = useState("");
   const [emailDocente, setEmailDocente] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
@@ -159,18 +165,21 @@ export default function RegistrationWizard({
     }
     if (currentStep === 2) {
       if (!colegio) return "Elige tu colegio para continuar.";
-      if (!docente.trim()) return "Escribe el nombre y apellido del docente.";
+      if (!docenteNombres.trim()) return "Escribe el nombre del docente.";
+      if (!docenteApellidos.trim()) return "Escribe el apellido del docente.";
       if (!isValidEmail(emailDocente)) return "Escribe un correo válido del docente.";
       return null;
     }
     if (currentStep === 3) {
-      if (!concursante.trim()) return "Escribe tu nombre y apellido.";
+      if (!concursanteNombres.trim()) return "Escribe tu nombre.";
+      if (!concursanteApellidos.trim()) return "Escribe tu apellido.";
       if (dniLimpio.length !== 8) return "Escribe tu DNI (8 números).";
       if (!sexo) return "Elige tu género.";
       return null;
     }
     if (currentStep === 4) {
-      if (!apoderado.trim()) return "Escribe el nombre y apellido de tu apoderado.";
+      if (!apoderadoNombres.trim()) return "Escribe el nombre de tu apoderado.";
+      if (!apoderadoApellidos.trim()) return "Escribe el apellido de tu apoderado.";
       if (dniApoderadoLimpio.length !== 8) return "Escribe el DNI de tu apoderado (8 números).";
       if (!celularApoderado.trim()) return "Escribe un celular de contacto.";
       return null;
@@ -231,12 +240,15 @@ export default function RegistrationWizard({
         departamento,
         provincia,
         distrito,
-        concursante: concursante.trim(),
+        concursanteNombres: concursanteNombres.trim(),
+        concursanteApellidos: concursanteApellidos.trim(),
         sexo: sexo as Sexo,
-        apoderado: apoderado.trim(),
+        apoderadoNombres: apoderadoNombres.trim(),
+        apoderadoApellidos: apoderadoApellidos.trim(),
         dniApoderado: dniApoderadoLimpio,
         celularApoderado: celularApoderado.trim(),
-        docente: docente.trim(),
+        docenteNombres: docenteNombres.trim(),
+        docenteApellidos: docenteApellidos.trim(),
         emailDocente: emailDocente.trim(),
         fileName: uploaded.fileName,
         fileUrl: uploaded.fileUrl,
@@ -252,7 +264,7 @@ export default function RegistrationWizard({
           colegio,
           grado: bookGrade,
           dni: dniLimpio,
-          concursante: concursante.trim(),
+          concursante: joinPersonName(concursanteNombres, concursanteApellidos),
           fileName: uploaded.fileName,
         }),
       );
@@ -274,6 +286,15 @@ export default function RegistrationWizard({
 
   const isLastStep = step === 5;
 
+  const alertMessage =
+    stepError || (isLastStep && fileError) || (step === 1 && ubigeoError) || "";
+
+  const dismissAlert = () => {
+    setStepError("");
+    setFileError("");
+    setUbigeoError("");
+  };
+
   return (
     <div className="wizard" style={{ "--field-accent": accent } as CSSProperties}>
       <WizardProgressBar step={step} />
@@ -286,11 +307,6 @@ export default function RegistrationWizard({
               <div className="wizard-step">
                 {ubigeoLoading && (
                   <p className="wizard-hint text-gray-600 bg-gray-50">Cargando departamentos…</p>
-                )}
-                {ubigeoError && (
-                  <p className="wizard-hint wizard-hint--error" role="alert">
-                    {ubigeoError}
-                  </p>
                 )}
                 <div className="wizard-label">
                   <span className="wizard-label-text">Departamento</span>
@@ -364,19 +380,20 @@ export default function RegistrationWizard({
                     placeholder="Busca y elige tu colegio…"
                   />
                 </div>
-                <label className="wizard-label">
-                  <span className="wizard-label-text">Nombre y apellido del docente</span>
-                  <input
-                    type="text"
-                    className="form-field"
-                    placeholder="Ej. María López García"
-                    value={docente}
-                    onChange={(e) => {
-                      setDocente(e.target.value);
-                      setStepError("");
-                    }}
-                  />
-                </label>
+                <PersonNameFields
+                  nombresLabel="Nombre del docente"
+                  apellidosLabel="Apellido del docente"
+                  nombres={docenteNombres}
+                  apellidos={docenteApellidos}
+                  onNombresChange={(value) => {
+                    setDocenteNombres(value);
+                    setStepError("");
+                  }}
+                  onApellidosChange={(value) => {
+                    setDocenteApellidos(value);
+                    setStepError("");
+                  }}
+                />
                 <label className="wizard-label">
                   <span className="wizard-label-text">Correo del docente</span>
                   <input
@@ -395,19 +412,20 @@ export default function RegistrationWizard({
 
             {step === 3 && (
               <div className="wizard-step">
-                <label className="wizard-label">
-                  <span className="wizard-label-text">Nombre y apellido</span>
-                  <input
-                    type="text"
-                    className="form-field"
-                    placeholder="Ej. Ana García López"
-                    value={concursante}
-                    onChange={(e) => {
-                      setConcursante(e.target.value);
-                      setStepError("");
-                    }}
-                  />
-                </label>
+                <PersonNameFields
+                  nombresLabel="Tu nombre"
+                  apellidosLabel="Tu apellido"
+                  nombres={concursanteNombres}
+                  apellidos={concursanteApellidos}
+                  onNombresChange={(value) => {
+                    setConcursanteNombres(value);
+                    setStepError("");
+                  }}
+                  onApellidosChange={(value) => {
+                    setConcursanteApellidos(value);
+                    setStepError("");
+                  }}
+                />
                 <label className="wizard-label">
                   <span className="wizard-label-text">DNI</span>
                   <input
@@ -441,19 +459,20 @@ export default function RegistrationWizard({
 
             {step === 4 && (
               <div className="wizard-step">
-                <label className="wizard-label">
-                  <span className="wizard-label-text">Nombre y apellido</span>
-                  <input
-                    type="text"
-                    className="form-field"
-                    placeholder="Ej. Rosa García Pérez"
-                    value={apoderado}
-                    onChange={(e) => {
-                      setApoderado(e.target.value);
-                      setStepError("");
-                    }}
-                  />
-                </label>
+                <PersonNameFields
+                  nombresLabel="Nombre del apoderado"
+                  apellidosLabel="Apellido del apoderado"
+                  nombres={apoderadoNombres}
+                  apellidos={apoderadoApellidos}
+                  onNombresChange={(value) => {
+                    setApoderadoNombres(value);
+                    setStepError("");
+                  }}
+                  onApellidosChange={(value) => {
+                    setApoderadoApellidos(value);
+                    setStepError("");
+                  }}
+                />
                 <label className="wizard-label">
                   <span className="wizard-label-text">DNI</span>
                   <input
@@ -513,12 +532,10 @@ export default function RegistrationWizard({
           </div>
 
           <div className="wizard-footer">
-            <div className="wizard-step-error" aria-live="polite">
-              {(stepError || (isLastStep && fileError)) && (
-                <p className="wizard-hint wizard-hint--error" role="alert">
-                  {stepError || fileError}
-                </p>
-              )}
+            <div aria-live="polite">
+              {alertMessage ? (
+                <WizardAlert message={alertMessage} onClose={dismissAlert} />
+              ) : null}
             </div>
 
             {step === 3 && dniChecking && (

@@ -1,8 +1,8 @@
 import type { RolUsuario } from "../lib/auth";
 
 export type InternalNavId =
+  | "dashboard"
   | "trabajos"
-  | "resumen"
   | "usuarios"
   | "configuracion-concurso";
 
@@ -15,16 +15,16 @@ export interface InternalNavItem {
 
 export const internalNavItems: InternalNavItem[] = [
   {
+    id: "dashboard",
+    label: "Dashboard",
+    href: "/interno/admin/",
+    roles: ["admin"],
+  },
+  {
     id: "trabajos",
     label: "Trabajos recibidos",
     href: "/interno/jurado/",
     roles: ["admin", "jurado"],
-  },
-  {
-    id: "resumen",
-    label: "Resumen del concurso",
-    href: "/interno/admin/",
-    roles: ["admin"],
   },
   {
     id: "usuarios",

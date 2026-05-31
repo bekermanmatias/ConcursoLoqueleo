@@ -34,10 +34,18 @@ export interface TrabajoListItem {
 }
 
 export interface TrabajoDetail extends TrabajoListItem {
+  concursanteNombres: string;
+  concursanteApellidos: string;
   sexo: "M" | "F";
+  apoderadoNombres: string;
+  apoderadoApellidos: string;
+  /** Nombre completo del apoderado */
   apoderado: string;
   dniApoderado: string;
   celularApoderado: string;
+  docenteNombres: string;
+  docenteApellidos: string;
+  /** Nombre completo del docente */
   docente: string;
   emailDocente: string;
   trabajoEnlace: string;

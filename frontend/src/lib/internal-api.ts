@@ -22,10 +22,16 @@ export interface TrabajoListItem {
 }
 
 export interface TrabajoDetail extends TrabajoListItem {
+  concursanteNombres: string;
+  concursanteApellidos: string;
   sexo: "M" | "F";
+  apoderadoNombres: string;
+  apoderadoApellidos: string;
   apoderado: string;
   dniApoderado: string;
   celularApoderado: string;
+  docenteNombres: string;
+  docenteApellidos: string;
   docente: string;
   emailDocente: string;
   trabajoEnlace: string;
@@ -587,14 +593,15 @@ export async function activateConcurso(id: number) {
 /** Abre el entregable en una pestaña nueva (requiere sesión activa). */
 export async function openTrabajoArchivo(id: number): Promise<void> {
   const url = await fetchArchivoBlobUrl(id);
-  const opened = window.open(url, "_blank", "noopener,noreferrer");
-  if (!opened) {
-    URL.revokeObjectURL(url);
-    throw new InternalApiError(
-      "No se pudo abrir el archivo. Permite ventanas emergentes o usa Detalle.",
-      0,
-    );
-  }
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  // Con noopener, window.open() devuelve null aunque la pestaña sí abra; no usarlo como fallo.
 }
 
 /** Carga el entregable con Authorization y devuelve blob URL para iframe/video */

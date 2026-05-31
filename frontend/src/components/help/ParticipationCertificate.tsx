@@ -13,9 +13,14 @@ export default function ParticipationCertificate({ record }: Props) {
         <p className="participation-certificate-brand">Soy Loqueleo 2026</p>
         <h2 className="participation-certificate-title">Constancia de participación</h2>
         <p className="participation-certificate-text">
-          Se certifica que el estudiante con DNI <strong>{record.dni}</strong>, del{" "}
-          <strong>{record.colegio}</strong> ({formatGradeLabel(record.grado)}), participó en el
-          concurso con la obra <em>{record.bookTitle}</em>.
+          Se certifica que{" "}
+          <strong>
+            {record.concursante ||
+              [record.concursanteNombres, record.concursanteApellidos].filter(Boolean).join(" ")}
+          </strong>{" "}
+          (DNI <strong>{record.dni}</strong>), del <strong>{record.colegio}</strong> (
+          {formatGradeLabel(record.grado)}), participó en el concurso con la obra{" "}
+          <em>{record.bookTitle}</em>.
         </p>
         <dl className="participation-certificate-meta">
           <div>

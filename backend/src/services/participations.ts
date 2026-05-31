@@ -21,7 +21,8 @@ import {
 const SELECT_JOIN = `
   SELECT
     p.dni_estudiante AS dni,
-    p.concursante,
+    p.concursante_nombres,
+    p.concursante_apellidos,
     t.codigo_entrega,
     r.nombre_obra,
     c.nombre AS colegio,
@@ -45,7 +46,8 @@ const SELECT_JOIN = `
 
 interface ParticipationRow {
   dni: string;
-  concursante: string;
+  concursante_nombres: string;
+  concursante_apellidos: string;
   codigo_entrega: string;
   nombre_obra: string;
   colegio: string;
@@ -200,29 +202,35 @@ export async function createParticipation(
 
     const participante = await client.query<{ id: number }>(
       `INSERT INTO participantes (
-        dni_estudiante, concursante, sexo,
-        apoderado, dni_apoderado, celular_apoderado,
-        docente, email_docente, colegio_id, grado_id
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        dni_estudiante, concursante_nombres, concursante_apellidos, sexo,
+        apoderado_nombres, apoderado_apellidos, dni_apoderado, celular_apoderado,
+        docente_nombres, docente_apellidos, email_docente, colegio_id, grado_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       ON CONFLICT (dni_estudiante) DO UPDATE SET
-        concursante = EXCLUDED.concursante,
+        concursante_nombres = EXCLUDED.concursante_nombres,
+        concursante_apellidos = EXCLUDED.concursante_apellidos,
         sexo = EXCLUDED.sexo,
-        apoderado = EXCLUDED.apoderado,
+        apoderado_nombres = EXCLUDED.apoderado_nombres,
+        apoderado_apellidos = EXCLUDED.apoderado_apellidos,
         dni_apoderado = EXCLUDED.dni_apoderado,
         celular_apoderado = EXCLUDED.celular_apoderado,
-        docente = EXCLUDED.docente,
+        docente_nombres = EXCLUDED.docente_nombres,
+        docente_apellidos = EXCLUDED.docente_apellidos,
         email_docente = EXCLUDED.email_docente,
         colegio_id = EXCLUDED.colegio_id,
         grado_id = EXCLUDED.grado_id
       RETURNING id`,
       [
         input.dni,
-        input.concursante,
+        input.concursanteNombres,
+        input.concursanteApellidos,
         input.sexo,
-        input.apoderado,
+        input.apoderadoNombres,
+        input.apoderadoApellidos,
         input.dniApoderado,
         input.celularApoderado,
-        input.docente,
+        input.docenteNombres,
+        input.docenteApellidos,
         input.emailDocente,
         colegioId,
         gradoId,

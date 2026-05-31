@@ -57,6 +57,12 @@ app.use("/api/internal", internalRouter);
 app.use("/api/ubigeo", ubigeoRouter);
 app.use("/api/participations", participationsRouter);
 
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Error interno del servidor" });
+});
+
 async function start() {
   await runMigrations();
   await ensureStorageReady();

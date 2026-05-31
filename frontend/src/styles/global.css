@@ -783,7 +783,7 @@
   }
 
   .wizard-step-slot {
-    @apply flex-1 min-h-0 overflow-visible;
+    @apply relative z-10 flex-1 min-h-0 overflow-visible;
   }
 
   .wizard-step-slot--scroll {
@@ -804,16 +804,20 @@
   }
 
   .wizard-footer {
-    @apply mt-auto shrink-0 border-t border-gray-100 bg-white pt-4;
+    @apply relative z-0 mt-auto shrink-0 border-t border-gray-100 bg-white pt-4;
     padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
   }
 
-  .wizard-step-error {
-    @apply shrink-0;
+  .wizard-alert {
+    @apply relative mb-3 pr-8 text-sm text-red-700 bg-red-50 rounded-xl px-4 py-2.5;
   }
 
-  .wizard-step-error:not(:empty) {
-    @apply mb-3;
+  .wizard-alert__message {
+    @apply leading-snug;
+  }
+
+  .wizard-alert__close {
+    @apply absolute right-2 top-2 cursor-pointer border-0 bg-transparent p-0 text-lg leading-none text-red-700/60 hover:text-red-700;
   }
 
   .wizard-step {
@@ -863,7 +867,7 @@
   }
 
   .form-select-wrap--open {
-    @apply z-[210];
+    @apply z-[50];
   }
 
   .form-select-trigger {
@@ -894,7 +898,7 @@
   }
 
   .form-select-dropdown {
-    @apply absolute left-0 right-0 top-full z-[200] mt-2 flex max-h-[min(28dvh,13rem)] flex-col overflow-hidden rounded-2xl border-2 bg-white shadow-xl;
+    @apply absolute left-0 right-0 top-full z-[60] mt-2 flex max-h-[min(28dvh,13rem)] flex-col overflow-hidden rounded-2xl border-2 bg-white shadow-xl;
     border-color: var(--field-accent, var(--color-brand-red));
   }
 
@@ -1620,6 +1624,10 @@
 
   .internal-main-content {
     @apply flex-1 px-3 pb-4 pt-3 sm:px-4 sm:pb-5 lg:px-5 lg:pt-4 lg:pb-5;
+  }
+
+  .internal-main-content:has(.internal-dashboard) {
+    @apply pt-2 sm:pt-3 lg:pt-3;
   }
 
   .internal-shell {
@@ -2453,6 +2461,105 @@
     @apply mt-1 text-sm text-gray-500;
   }
 
+  .internal-dashboard {
+    @apply flex flex-col gap-4;
+  }
+
+  .internal-dashboard-hero {
+    @apply flex flex-col gap-3 rounded-2xl border border-brand-red/20 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5 sm:py-4;
+    box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.08);
+    background-image: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+  }
+
+  .internal-dashboard-hero__title {
+    @apply text-lg font-extrabold tracking-tight text-ink-900 sm:text-xl;
+  }
+
+  .internal-dashboard-hero__lead {
+    @apply mt-1 text-sm text-gray-500;
+  }
+
+  .internal-dashboard-hero__metric {
+    @apply flex shrink-0 items-end justify-between gap-4 border-t border-red-100 pt-3 sm:flex-col sm:items-end sm:gap-0.5 sm:border-t-0 sm:border-l sm:border-red-100 sm:pl-5 sm:pt-0;
+  }
+
+  .internal-dashboard-hero__metric-label {
+    @apply text-[11px] font-bold uppercase tracking-wide text-gray-500;
+  }
+
+  .internal-dashboard-hero__metric-value {
+    @apply text-3xl font-extrabold tabular-nums leading-none text-brand-red sm:text-4xl;
+  }
+
+  .internal-dashboard__section-title {
+    @apply mb-2 text-xs font-bold uppercase tracking-wide text-gray-500;
+  }
+
+  .internal-dashboard-pipeline {
+    @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .internal-dashboard-pipe {
+    @apply rounded-2xl border border-gray-100 bg-white p-4;
+    box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.06);
+  }
+
+  .internal-dashboard-pipe__head {
+    @apply flex items-start justify-between gap-2;
+  }
+
+  .internal-dashboard-pipe__value {
+    @apply text-2xl font-extrabold tabular-nums leading-none text-ink-900;
+  }
+
+  .internal-dashboard-pipe__track {
+    @apply mt-3 h-1.5 overflow-hidden rounded-full bg-gray-100;
+  }
+
+  .internal-dashboard-pipe__fill {
+    @apply h-full rounded-full transition-[width] duration-500 ease-out;
+  }
+
+  .internal-dashboard-pipe--recibido .internal-dashboard-pipe__fill {
+    @apply bg-gray-400;
+  }
+
+  .internal-dashboard-pipe--en_revision .internal-dashboard-pipe__fill {
+    @apply bg-amber-400;
+  }
+
+  .internal-dashboard-pipe--finalista .internal-dashboard-pipe__fill {
+    @apply bg-sky-400;
+  }
+
+  .internal-dashboard-pipe--ganador .internal-dashboard-pipe__fill {
+    @apply bg-emerald-500;
+  }
+
+  .internal-dashboard-pipe__pct {
+    @apply mt-2 text-[11px] font-medium text-gray-500;
+  }
+
+  .internal-dashboard--loading {
+    @apply animate-pulse;
+  }
+
+  .internal-dashboard-skeleton {
+    @apply rounded-2xl bg-gray-100;
+  }
+
+  .internal-dashboard-skeleton--hero {
+    @apply h-[4.5rem] sm:h-20;
+  }
+
+  .internal-dashboard-skeleton--pipe {
+    @apply h-28;
+  }
+
+  .internal-dashboard-skeleton--chart {
+    @apply mt-2 h-72 sm:h-80;
+  }
+
   .internal-concurso-form {
     @apply mt-2;
   }
@@ -2579,8 +2686,12 @@
   }
 
   .internal-chart-card {
-    @apply mt-6 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6;
+    @apply rounded-2xl border border-gray-100 bg-white p-5 sm:p-6;
     box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.06);
+  }
+
+  .internal-chart-card--empty .internal-chart-card__empty-text {
+    @apply rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-4 py-10 text-center text-sm text-gray-500;
   }
 
   .internal-chart-card__header {
@@ -2633,6 +2744,13 @@
     fill: #94a3b8;
     font-size: 11px;
     text-anchor: end;
+  }
+
+  .internal-chart__axis-title {
+    fill: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-anchor: middle;
   }
 
   .internal-chart__axis-label--right {

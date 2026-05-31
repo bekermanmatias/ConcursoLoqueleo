@@ -12,6 +12,9 @@ export interface ParticipationRecord {
   bookTitle: string;
   colegio: string;
   grado: Grado;
+  concursanteNombres: string;
+  concursanteApellidos: string;
+  concursante: string;
   fileName: string;
   fileStatus: FileStatus;
   fileStatusDetail: string;

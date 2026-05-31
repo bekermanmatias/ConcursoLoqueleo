@@ -8,7 +8,7 @@ interface Props {
 const CHART = {
   width: 720,
   height: 280,
-  pad: { top: 16, right: 48, bottom: 40, left: 44 },
+  pad: { top: 16, right: 16, bottom: 40, left: 44 },
 };
 
 function formatDayLabel(fecha: string): string {
@@ -36,7 +36,18 @@ function niceMax(value: number): number {
 function buildTicks(max: number, count = 4): number[] {
   const ceiling = niceMax(max);
   const step = ceiling / count;
-  return Array.from({ length: count + 1 }, (_, index) => Math.round(step * index));
+  const ticks: number[] = [];
+  for (let index = 0; index <= count; index += 1) {
+    const value = Math.round(step * index);
+    if (!ticks.length || value > ticks[ticks.length - 1]) {
+      ticks.push(value);
+    }
+  }
+  const last = ticks[ticks.length - 1];
+  if (last !== ceiling && last !== undefined) {
+    ticks.push(ceiling);
+  }
+  return ticks;
 }
 
 export default function EntregasDiariasChart({ data = [] }: Props) {
@@ -45,29 +56,31 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
   const chartData = useMemo(() => {
     if (!data.length) return null;
 
-    const maxDaily = Math.max(...data.map((point) => point.cantidad), 1);
-    const maxCumulative = Math.max(...data.map((point) => point.acumulado), 1);
-    const dailyTicks = buildTicks(maxDaily);
-    const cumulativeTicks = buildTicks(maxCumulative);
-    const dailyMax = dailyTicks[dailyTicks.length - 1] || 1;
-    const cumulativeMax = cumulativeTicks[cumulativeTicks.length - 1] || 1;
+    const maxValue = Math.max(
+      ...data.map((point) => Math.max(point.cantidad, point.acumulado)),
+      1,
+    );
+    const yTicks = buildTicks(maxValue);
+    const yMax = yTicks[yTicks.length - 1] || 1;
 
     const plotWidth = CHART.width - CHART.pad.left - CHART.pad.right;
     const plotHeight = CHART.height - CHART.pad.top - CHART.pad.bottom;
     const barGap = plotWidth / data.length;
     const barWidth = Math.max(4, Math.min(28, barGap * 0.62));
 
+    const scaleY = (value: number) =>
+      CHART.pad.top + plotHeight - (value / yMax) * plotHeight;
+
     const bars = data.map((point, index) => {
       const x = CHART.pad.left + barGap * index + barGap / 2;
-      const height = (point.cantidad / dailyMax) * plotHeight;
-      const y = CHART.pad.top + plotHeight - height;
+      const height = (point.cantidad / yMax) * plotHeight;
+      const y = scaleY(point.cantidad);
       return { ...point, index, x, y, height, barWidth };
     });
 
     const linePoints = data.map((point, index) => {
       const x = CHART.pad.left + barGap * index + barGap / 2;
-      const y = CHART.pad.top + plotHeight - (point.acumulado / cumulativeMax) * plotHeight;
-      return { x, y };
+      return { x, y: scaleY(point.acumulado) };
     });
 
     const labelStep = Math.max(1, Math.ceil(data.length / 8));
@@ -75,10 +88,8 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
     return {
       bars,
       linePoints,
-      dailyTicks,
-      cumulativeTicks,
-      dailyMax,
-      cumulativeMax,
+      yTicks,
+      yMax,
       plotHeight,
       labelStep,
       barGap,
@@ -87,23 +98,23 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
 
   if (!chartData) {
     return (
-      <div className="internal-chart-card">
-        <p className="internal-muted">Aún no hay entregas registradas.</p>
-      </div>
+      <section className="internal-chart-card internal-chart-card--empty" aria-label="Avance del concurso">
+        <div className="internal-chart-card__header">
+          <div>
+            <h2 className="internal-chart-card__title">Avance del concurso</h2>
+            <p className="internal-chart-card__subtitle">
+              Entregas recibidas día a día y total acumulado.
+            </p>
+          </div>
+        </div>
+        <p className="internal-chart-card__empty-text">
+          Aún no hay entregas registradas. Cuando lleguen trabajos, verás la evolución aquí.
+        </p>
+      </section>
     );
   }
 
-  const {
-    bars,
-    linePoints,
-    dailyTicks,
-    cumulativeTicks,
-    dailyMax,
-    cumulativeMax,
-    plotHeight,
-    labelStep,
-    barGap,
-  } = chartData;
+  const { bars, linePoints, yTicks, yMax, plotHeight, labelStep, barGap } = chartData;
 
   const linePath = linePoints
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
@@ -112,7 +123,7 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
   const hovered = hoveredIndex !== null ? bars[hoveredIndex] : null;
 
   return (
-    <div className="internal-chart-card">
+    <section className="internal-chart-card" aria-label="Avance del concurso">
       <div className="internal-chart-card__header">
         <div>
           <h2 className="internal-chart-card__title">Avance del concurso</h2>
@@ -156,10 +167,19 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
           role="img"
           aria-label="Gráfico de entregas diarias y total acumulado del concurso"
         >
-          {dailyTicks.map((tick) => {
-            const y = CHART.pad.top + plotHeight - (tick / dailyMax) * plotHeight;
+          <text
+            x={12}
+            y={CHART.pad.top + plotHeight / 2}
+            className="internal-chart__axis-title"
+            transform={`rotate(-90 12 ${CHART.pad.top + plotHeight / 2})`}
+          >
+            Entregas
+          </text>
+
+          {yTicks.map((tick, tickIndex) => {
+            const y = CHART.pad.top + plotHeight - (tick / yMax) * plotHeight;
             return (
-              <g key={`daily-${tick}`}>
+              <g key={`y-${tickIndex}`}>
                 <line
                   x1={CHART.pad.left}
                   x2={CHART.width - CHART.pad.right}
@@ -174,23 +194,9 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
             );
           })}
 
-          {cumulativeTicks.map((tick) => {
-            const y = CHART.pad.top + plotHeight - (tick / cumulativeMax) * plotHeight;
-            return (
-              <text
-                key={`cum-${tick}`}
-                x={CHART.width - CHART.pad.right + 8}
-                y={y + 4}
-                className="internal-chart__axis-label internal-chart__axis-label--right"
-              >
-                {tick}
-              </text>
-            );
-          })}
-
           {bars.map((bar) => (
             <rect
-              key={bar.fecha}
+              key={`bar-${bar.index}-${bar.fecha}`}
               x={bar.x - bar.barWidth / 2}
               y={bar.y}
               width={bar.barWidth}
@@ -210,7 +216,7 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
 
           {linePoints.map((point, index) => (
             <circle
-              key={data[index].fecha}
+              key={`dot-${index}-${data[index]?.fecha ?? index}`}
               cx={point.x}
               cy={point.y}
               r={hoveredIndex === index ? 5 : 3.5}
@@ -236,6 +242,6 @@ export default function EntregasDiariasChart({ data = [] }: Props) {
           })}
         </svg>
       </div>
-    </div>
+    </section>
   );
 }

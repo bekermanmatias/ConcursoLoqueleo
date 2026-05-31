@@ -12,12 +12,15 @@ export interface SaveParticipationInput {
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  concursante: string;
+  concursanteNombres: string;
+  concursanteApellidos: string;
   sexo: Sexo;
-  apoderado: string;
+  apoderadoNombres: string;
+  apoderadoApellidos: string;
   dniApoderado: string;
   celularApoderado: string;
-  docente: string;
+  docenteNombres: string;
+  docenteApellidos: string;
   emailDocente: string;
   fileName: string;
   fileUrl?: string;
@@ -47,11 +50,14 @@ const FIELD_LABELS: Record<string, string> = {
   colegio: "el colegio",
   codigoColegio: "el código del colegio",
   grado: "el grado",
-  concursante: "tu nombre",
+  concursanteNombres: "tu nombre",
+  concursanteApellidos: "tu apellido",
   sexo: "tu género",
-  apoderado: "el apoderado",
+  apoderadoNombres: "el nombre del apoderado",
+  apoderadoApellidos: "el apellido del apoderado",
   celularApoderado: "el celular del apoderado",
-  docente: "el docente",
+  docenteNombres: "el nombre del docente",
+  docenteApellidos: "el apellido del docente",
   emailDocente: "el correo del docente",
   fileName: "el archivo",
 };

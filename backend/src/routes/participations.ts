@@ -1,45 +1,74 @@
-import { Router } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import {
   createParticipation,
   findByDni,
   isDniBlocked,
   reuploadFile,
 } from "../services/participations.js";
+import { requirePersonName } from "../utils/person-name.js";
 
 export const participationsRouter = Router();
 
-function cleanDni(raw: string): string | null {
-  const dni = raw.replace(/\D/g, "");
+type AsyncRoute = (req: Request, res: Response) => Promise<void>;
+
+function asyncRoute(handler: AsyncRoute) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    handler(req, res).catch(next);
+  };
+}
+
+function cleanDni(raw: string | string[]): string | null {
+  const dni = String(raw).replace(/\D/g, "");
   return dni.length === 8 ? dni : null;
 }
 
-participationsRouter.get("/:dni/blocked", async (req, res) => {
-  const dni = cleanDni(req.params.dni);
-  if (!dni) {
-    res.status(400).json({ error: "DNI inválido" });
-    return;
+function parsePersonFields(body: Record<string, unknown>, prefix: string) {
+  try {
+    return requirePersonName(
+      body[`${prefix}Nombres`],
+      body[`${prefix}Apellidos`],
+      prefix,
+    );
+  } catch {
+    return null;
   }
+}
 
-  res.json({ blocked: await isDniBlocked(dni) });
-});
+participationsRouter.get(
+  "/:dni/blocked",
+  asyncRoute(async (req, res) => {
+    const dni = cleanDni(req.params.dni);
+    if (!dni) {
+      res.status(400).json({ error: "DNI inválido" });
+      return;
+    }
 
-participationsRouter.get("/:dni", async (req, res) => {
-  const dni = cleanDni(req.params.dni);
-  if (!dni) {
-    res.status(400).json({ error: "DNI inválido" });
-    return;
-  }
+    res.json({ blocked: await isDniBlocked(dni) });
+  }),
+);
 
-  const record = await findByDni(dni);
-  if (!record) {
-    res.status(404).json({ error: "No encontrado" });
-    return;
-  }
+participationsRouter.get(
+  "/:dni",
+  asyncRoute(async (req, res) => {
+    const dni = cleanDni(req.params.dni);
+    if (!dni) {
+      res.status(400).json({ error: "DNI inválido" });
+      return;
+    }
 
-  res.json(record);
-});
+    const record = await findByDni(dni);
+    if (!record) {
+      res.status(404).json({ error: "No encontrado" });
+      return;
+    }
 
-participationsRouter.post("/", async (req, res) => {
+    res.json(record);
+  }),
+);
+
+participationsRouter.post(
+  "/",
+  asyncRoute(async (req, res) => {
   const dni = cleanDni(String(req.body.dni ?? ""));
   const dniApoderado = cleanDni(String(req.body.dniApoderado ?? ""));
 
@@ -58,11 +87,8 @@ participationsRouter.post("/", async (req, res) => {
     "colegio",
     "codigoColegio",
     "grado",
-    "concursante",
     "sexo",
-    "apoderado",
     "celularApoderado",
-    "docente",
     "emailDocente",
     "fileName",
   ] as const;
@@ -72,6 +98,23 @@ participationsRouter.post("/", async (req, res) => {
       res.status(400).json({ error: `Falta ${field}` });
       return;
     }
+  }
+
+  const concursante = parsePersonFields(req.body, "concursante");
+  const apoderado = parsePersonFields(req.body, "apoderado");
+  const docente = parsePersonFields(req.body, "docente");
+
+  if (!concursante) {
+    res.status(400).json({ error: "Completa nombre y apellidos del estudiante." });
+    return;
+  }
+  if (!apoderado) {
+    res.status(400).json({ error: "Completa nombre y apellidos del apoderado." });
+    return;
+  }
+  if (!docente) {
+    res.status(400).json({ error: "Completa nombre y apellidos del docente." });
+    return;
   }
 
   if (!["M", "F"].includes(String(req.body.sexo))) {
@@ -90,12 +133,15 @@ participationsRouter.post("/", async (req, res) => {
       departamento: req.body.departamento,
       provincia: req.body.provincia ?? req.body.ciudad,
       distrito: req.body.distrito,
-      concursante: String(req.body.concursante).trim(),
+      concursanteNombres: concursante.nombres,
+      concursanteApellidos: concursante.apellidos,
       sexo: req.body.sexo,
-      apoderado: String(req.body.apoderado).trim(),
+      apoderadoNombres: apoderado.nombres,
+      apoderadoApellidos: apoderado.apellidos,
       dniApoderado,
       celularApoderado: String(req.body.celularApoderado),
-      docente: String(req.body.docente).trim(),
+      docenteNombres: docente.nombres,
+      docenteApellidos: docente.apellidos,
       emailDocente: String(req.body.emailDocente).trim(),
       fileName: req.body.fileName,
       fileUrl: req.body.fileUrl,
@@ -145,9 +191,12 @@ participationsRouter.post("/", async (req, res) => {
     }
     throw error;
   }
-});
+  }),
+);
 
-participationsRouter.patch("/:dni/file", async (req, res) => {
+participationsRouter.patch(
+  "/:dni/file",
+  asyncRoute(async (req, res) => {
   const dni = cleanDni(req.params.dni);
   const fileName = String(req.body.fileName ?? "").trim();
 
@@ -170,4 +219,5 @@ participationsRouter.patch("/:dni/file", async (req, res) => {
   }
 
   res.json(record);
-});
+  }),
+);
