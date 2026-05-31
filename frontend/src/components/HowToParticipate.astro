@@ -1,5 +1,9 @@
 ---
-import { termsAndConditionsPdf } from "../data/legal";
+interface Props {
+  termsPdfUrl: string;
+}
+
+const { termsPdfUrl } = Astro.props;
 
 const steps = [
   { n: 1, label: "Busca el reto de tu grado" },
@@ -73,7 +77,7 @@ const steps = [
           </a>
           <p class="mt-4 text-xs text-gray-400">
             <a
-              href={termsAndConditionsPdf}
+              href={termsPdfUrl}
               target="_blank"
               rel="noopener noreferrer"
               class="hover:text-gray-600 transition underline-offset-2 hover:underline"

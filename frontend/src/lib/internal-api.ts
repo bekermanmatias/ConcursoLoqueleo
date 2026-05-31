@@ -55,6 +55,69 @@ export interface EntregaPorDia {
   acumulado: number;
 }
 
+export interface Concurso {
+  id: number;
+  codigo: string;
+  nombre: string;
+  anio: number;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  inscripcionesAbiertas: boolean;
+  activo: boolean;
+  terminosPdf: string | null;
+  createdAt: string;
+}
+
+export interface ConcursoSummary extends Concurso {
+  totalTrabajos: number;
+  totalParticipantes: number;
+}
+
+export interface ConcursoObra {
+  id: number;
+  concursoId: number;
+  gradoId: number;
+  gradoLabel: string;
+  bookSlug: string | null;
+  nombreObra: string;
+  autor: string | null;
+  rol: string | null;
+  edad: string | null;
+  tipoReto: string;
+  coverUrl: string | null;
+  basesPdf: string | null;
+  challengeIntro: string | null;
+  challengeHeadline: string | null;
+  descripcionReto: string | null;
+  entregable: string | null;
+  formatos: string[];
+  requisitos: string[];
+  notaParticipacion: string | null;
+  activo: boolean;
+}
+
+export const OBRA_COVER_RECOMMENDED = { width: 600, height: 900, ratio: "2:3" };
+export const OBRA_COVER_MAX_MB = 2;
+
+function normalizeConcursoObra(obra: ConcursoObra): ConcursoObra {
+  return {
+    ...obra,
+    formatos: obra.formatos ?? [],
+    requisitos: obra.requisitos ?? [],
+  };
+}
+
+function normalizeConcursoDetail(detail: ConcursoDetail): ConcursoDetail {
+  return {
+    ...detail,
+    obras: detail.obras.map(normalizeConcursoObra),
+  };
+}
+
+export interface ConcursoDetail extends ConcursoSummary {
+  obras: ConcursoObra[];
+}
+
 export interface InternalStats {
   totalTrabajos: number;
   totalParticipantes: number;
@@ -232,8 +295,9 @@ export async function saveEvaluacion(
   });
 }
 
-export async function fetchInternalStats() {
-  const data = await internalRequest<Partial<InternalStats>>("/api/internal/stats");
+export async function fetchInternalStats(codigoConcurso?: string) {
+  const qs = codigoConcurso ? `?codigoConcurso=${encodeURIComponent(codigoConcurso)}` : "";
+  const data = await internalRequest<Partial<InternalStats>>(`/api/internal/stats${qs}`);
   return {
     totalTrabajos: data.totalTrabajos ?? 0,
     totalParticipantes: data.totalParticipantes ?? data.totalTrabajos ?? 0,
@@ -353,6 +417,170 @@ export async function updateInternalUser(
 export async function deleteInternalUser(id: number) {
   return internalRequest<void>(`/api/internal/usuarios/${id}`, {
     method: "DELETE",
+  });
+}
+
+export async function fetchActiveConcurso() {
+  return internalRequest<Concurso>("/api/internal/concursos/activo");
+}
+
+export async function fetchConcursos() {
+  return internalRequest<ConcursoSummary[]>("/api/internal/concursos");
+}
+
+export async function fetchConcurso(id: number) {
+  const detail = await internalRequest<ConcursoDetail>(`/api/internal/concursos/${id}`);
+  return normalizeConcursoDetail(detail);
+}
+
+export async function updateConcurso(
+  id: number,
+  input: {
+    nombre?: string;
+    anio?: number;
+    fechaInicio?: string | null;
+    fechaFin?: string | null;
+    inscripcionesAbiertas?: boolean;
+    terminosPdf?: string | null;
+  },
+) {
+  return internalRequest<ConcursoDetail>(`/api/internal/concursos/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function createConcurso(input: {
+  codigo: string;
+  nombre: string;
+  anio: number;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  inscripcionesAbiertas?: boolean;
+  clonarDesdeId?: number;
+}) {
+  return internalRequest<ConcursoDetail>("/api/internal/concursos", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateConcursoObra(
+  concursoId: number,
+  obraId: number,
+  input: {
+    bookSlug?: string | null;
+    nombreObra?: string;
+    autor?: string | null;
+    rol?: string | null;
+    edad?: string | null;
+    tipoReto?: string;
+    coverUrl?: string | null;
+    basesPdf?: string | null;
+    challengeIntro?: string | null;
+    challengeHeadline?: string | null;
+    descripcionReto?: string | null;
+    entregable?: string | null;
+    formatos?: string[];
+    requisitos?: string[];
+    notaParticipacion?: string | null;
+    activo?: boolean;
+  },
+) {
+  return normalizeConcursoObra(
+    await internalRequest<ConcursoObra>(
+      `/api/internal/concursos/${concursoId}/obras/${obraId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(input),
+      },
+    ),
+  );
+}
+
+async function uploadConcursoPdf(path: string, file: File) {
+  const token = getAuthToken();
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(apiUrl(path), {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (response.status === 401) {
+    clearAuthSession();
+    window.location.href = "/interno/login/";
+    throw new InternalApiError("Sesión expirada.", 401);
+  }
+  const data = (await response.json().catch(() => ({}))) as { error?: string };
+  if (!response.ok) {
+    throw new InternalApiError(data.error ?? "Error al subir el archivo.", response.status);
+  }
+  return data;
+}
+
+export function resolveConcursoAssetUrl(path: string | null): string | null {
+  if (!path) return null;
+  if (path.startsWith("local://")) {
+    return apiUrl(
+      `/api/internal/documentos?path=${encodeURIComponent(path)}`,
+    );
+  }
+  return path;
+}
+
+/** @deprecated Usa resolveConcursoAssetUrl */
+export function resolveConcursoDocUrl(path: string | null): string | null {
+  return resolveConcursoAssetUrl(path);
+}
+
+export async function uploadConcursoTerminosPdf(concursoId: number, file: File) {
+  return uploadConcursoPdf(`/api/internal/concursos/${concursoId}/terminos-pdf`, file);
+}
+
+export async function uploadConcursoObraBasesPdf(
+  concursoId: number,
+  obraId: number,
+  file: File,
+) {
+  const data = await uploadConcursoPdf(
+    `/api/internal/concursos/${concursoId}/obras/${obraId}/bases-pdf`,
+    file,
+  );
+  return normalizeConcursoObra(data as ConcursoObra);
+}
+
+export async function uploadConcursoObraCoverImage(
+  concursoId: number,
+  obraId: number,
+  file: File,
+) {
+  const token = getAuthToken();
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(
+    apiUrl(`/api/internal/concursos/${concursoId}/obras/${obraId}/cover-image`),
+    {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    },
+  );
+  if (response.status === 401) {
+    clearAuthSession();
+    window.location.href = "/interno/login/";
+    throw new InternalApiError("Sesión expirada.", 401);
+  }
+  const data = (await response.json().catch(() => ({}))) as ConcursoObra & { error?: string };
+  if (!response.ok) {
+    throw new InternalApiError(data.error ?? "Error al subir la portada.", response.status);
+  }
+  return normalizeConcursoObra(data);
+}
+
+export async function activateConcurso(id: number) {
+  return internalRequest<Concurso>(`/api/internal/concursos/${id}/activar`, {
+    method: "POST",
   });
 }
 

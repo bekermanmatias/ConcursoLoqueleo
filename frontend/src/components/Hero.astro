@@ -1,6 +1,11 @@
 ---
 import Countdown from "./Countdown.tsx";
 import HowToParticipate from "./HowToParticipate.astro";
+import { fetchPublicConcursoServer } from "../lib/concurso-server";
+import { resolveTermsPdfUrl } from "../lib/legal";
+
+const activeConcurso = await fetchPublicConcursoServer();
+const termsPdfUrl = resolveTermsPdfUrl(activeConcurso?.terminosPdf);
 ---
 
 <section class="pt-10 sm:pt-14 pb-12 sm:pb-16">
@@ -45,7 +50,7 @@ import HowToParticipate from "./HowToParticipate.astro";
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Countdown client:load />
       <div class="countdown-divider" role="separator" aria-hidden="true"></div>
-      <HowToParticipate />
+      <HowToParticipate termsPdfUrl={termsPdfUrl} />
     </div>
   </div>
 </section>

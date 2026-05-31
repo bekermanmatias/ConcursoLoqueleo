@@ -3,7 +3,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 ARG PUBLIC_API_URL=
+ARG BUILD_API_URL=http://backend:3000
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
+ENV BUILD_API_URL=$BUILD_API_URL
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

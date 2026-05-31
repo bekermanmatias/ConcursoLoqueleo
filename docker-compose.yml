@@ -51,6 +51,8 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        BUILD_API_URL: http://backend:3000
     container_name: loqueleo-frontend
     restart: unless-stopped
     depends_on:

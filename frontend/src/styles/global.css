@@ -2453,6 +2453,131 @@
     @apply mt-1 text-sm text-gray-500;
   }
 
+  .internal-concurso-form {
+    @apply mt-2;
+  }
+
+  .internal-concurso-form__grid {
+    @apply grid gap-4 sm:grid-cols-2;
+  }
+
+  .internal-concurso-form__actions {
+    @apply mt-6 flex justify-end;
+  }
+
+  .internal-field--checkbox {
+    @apply flex items-center gap-2 sm:col-span-2;
+  }
+
+  .internal-field--checkbox input {
+    @apply h-4 w-4 accent-brand-red;
+  }
+
+  .internal-modal--wide {
+    @apply max-w-2xl;
+  }
+
+  .internal-modal--obra {
+    @apply max-h-[90vh] max-w-3xl overflow-y-auto;
+  }
+
+  .internal-obra-form {
+    @apply mt-4 flex flex-col gap-5;
+  }
+
+  .internal-obra-form__cover {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-start;
+  }
+
+  .internal-obra-form__cover-preview {
+    @apply flex h-[180px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50;
+  }
+
+  .internal-obra-form__cover-preview img {
+    @apply h-full w-full object-cover;
+  }
+
+  .internal-obra-form__cover-hint {
+    @apply mb-3 text-xs leading-relaxed;
+  }
+
+  .internal-obra-form__grid {
+    @apply grid gap-4 sm:grid-cols-2;
+  }
+
+  .internal-obra-form__full {
+    @apply sm:col-span-2;
+  }
+
+  .internal-obra-form__doc {
+    @apply rounded-xl border border-gray-100 bg-gray-50/80 p-4;
+  }
+
+  .internal-obra-form__doc-label {
+    @apply text-sm font-semibold text-ink-900;
+  }
+
+  .internal-textarea {
+    @apply min-h-[4.5rem] resize-y;
+  }
+
+  .internal-stats-grid--modal {
+    @apply mt-4;
+  }
+
+  .internal-stats-grid--inline {
+    @apply sm:grid-cols-2 lg:grid-cols-2;
+  }
+
+  .internal-badge {
+    @apply inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .internal-badge--active {
+    @apply border-green-200 bg-green-50 text-green-800;
+  }
+
+  .internal-badge--prep {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+
+  .internal-badge--archived {
+    @apply border-gray-200 bg-gray-50 text-gray-600;
+  }
+
+  .internal-concurso-detail {
+    @apply flex flex-col gap-6;
+  }
+
+  .internal-concurso-section {
+    @apply rounded-2xl border border-gray-100 bg-white p-5;
+    box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.06);
+  }
+
+  .internal-concurso-section__head {
+    @apply mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .internal-concurso-section__title {
+    @apply text-base font-bold text-ink-900;
+  }
+
+  .internal-concurso-section__hint {
+    @apply mb-3 text-sm;
+  }
+
+  .internal-doc-row {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .internal-doc-row--compact {
+    @apply gap-2;
+  }
+
+  .internal-file-btn {
+    @apply cursor-pointer;
+  }
+
   .internal-chart-card {
     @apply mt-6 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6;
     box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.06);

@@ -1,21 +1,29 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import RegistrationWizard from "../../../components/flow/RegistrationWizard.tsx";
-import { getBookById, getAllBookIds } from "../../../lib/books";
 import { ageUiStyles } from "../../../data/books";
+import {
+  fetchPublicObraServer,
+  fetchPublicObraSlugsServer,
+  fetchPublicConcursoServer,
+} from "../../../lib/concurso-server";
+import { resolveTermsPdfUrl } from "../../../lib/legal";
 
-export function getStaticPaths() {
-  return getAllBookIds().map((id) => ({ params: { id } }));
+export async function getStaticPaths() {
+  const slugs = await fetchPublicObraSlugsServer();
+  return slugs.map((id) => ({ params: { id } }));
 }
 
 const { id } = Astro.params;
-const book = getBookById(id!);
+const book = await fetchPublicObraServer(id!);
 
 if (!book) {
   return Astro.redirect("/");
 }
 
 const { accent } = ageUiStyles[book.age];
+const activeConcurso = await fetchPublicConcursoServer();
+const termsPdfUrl = resolveTermsPdfUrl(activeConcurso?.terminosPdf);
 ---
 
 <BaseLayout
@@ -31,6 +39,7 @@ const { accent } = ageUiStyles[book.age];
           bookTitle={book.title}
           bookGrade={book.grade}
           accent={accent}
+          termsPdfUrl={termsPdfUrl}
         />
       </div>
     </div>

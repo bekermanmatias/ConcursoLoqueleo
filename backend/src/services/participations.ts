@@ -1,13 +1,15 @@
 import { randomBytes } from "node:crypto";
 import { pool } from "../db/pool.js";
-import { config } from "../config.js";
+import {
+  findActiveObraForParticipation,
+  findBookSlugByObraTitle,
+  getActiveConcursoCodigo,
+} from "./concursos.js";
 import { assertLocalObjectReady } from "./storage.js";
 import {
-  BOOKS_BY_SLUG,
   buildArchivoUrl,
   inferTipoArchivo,
   parseGradoLabel,
-  slugFromBookTitle,
 } from "../data/books.js";
 import {
   canReupload,
@@ -60,9 +62,10 @@ interface ParticipationRow {
   book_slug?: string | null;
 }
 
-function generateCodigoEntrega(): string {
+async function generateCodigoEntrega(): Promise<string> {
   const suffix = randomBytes(4).toString("hex").toUpperCase();
-  return `${config.codigoConcurso}-${suffix}`;
+  const codigoConcurso = await getActiveConcursoCodigo();
+  return `${codigoConcurso}-${suffix}`;
 }
 
 export async function findByDni(dni: string): Promise<ParticipationRecord | null> {
@@ -73,7 +76,7 @@ export async function findByDni(dni: string): Promise<ParticipationRecord | null
   if (!result.rows[0]) return null;
   return mapRow({
     ...result.rows[0],
-    book_slug: slugFromBookTitle(result.rows[0].nombre_obra),
+    book_slug: (await findBookSlugByObraTitle(result.rows[0].nombre_obra)) ?? result.rows[0].nombre_obra,
     permite_reenvio: result.rows[0].permite_reenvio,
   });
 }
@@ -135,13 +138,18 @@ async function findGradoId(gradoLabelStr: string): Promise<number> {
   return result.rows[0].id;
 }
 
-async function findRetoId(bookId: string, bookTitle: string, gradoId: number): Promise<number> {
-  const meta = BOOKS_BY_SLUG[bookId];
-  const title = meta?.title ?? bookTitle;
+async function findRetoId(bookId: string, bookTitle: string, gradoLabel: string): Promise<number> {
+  const obra = await findActiveObraForParticipation(bookId, gradoLabel);
+  if (!obra) throw new Error("OBRA_NOT_FOUND");
+
+  const title = obra.nombreObra;
+  if (bookTitle.trim() && bookTitle.trim() !== title) {
+    throw new Error("OBRA_NOT_FOUND");
+  }
 
   const result = await pool.query<{ id: number }>(
     `SELECT id FROM retos WHERE nombre_obra = $1 AND grado_id = $2`,
-    [title, gradoId],
+    [title, obra.gradoId],
   );
   if (!result.rows[0]) throw new Error("RETO_NOT_FOUND");
   return result.rows[0].id;
@@ -156,7 +164,7 @@ export async function createParticipation(
   }
 
   const gradoId = await findGradoId(input.grado);
-  const retoId = await findRetoId(input.bookId, input.bookTitle, gradoId);
+  const retoId = await findRetoId(input.bookId, input.bookTitle, input.grado);
 
   if (!input.departamento || !input.provincia || !input.distrito) {
     throw new Error("UBICACION_REQUIRED");
@@ -183,7 +191,8 @@ export async function createParticipation(
 
   const trabajoEnlace = buildArchivoUrl(input.fileName, input.fileUrl, input.s3Key);
   const tipoArchivo = inferTipoArchivo(input.fileName);
-  const codigoEntrega = generateCodigoEntrega();
+  const codigoEntrega = await generateCodigoEntrega();
+  const codigoConcurso = await getActiveConcursoCodigo();
 
   const client = await pool.connect();
   try {
@@ -232,7 +241,7 @@ export async function createParticipation(
         estado = 'recibido',
         fecha_envio = NOW()`,
       [
-        config.codigoConcurso,
+        codigoConcurso,
         codigoEntrega,
         participante.rows[0].id,
         retoId,

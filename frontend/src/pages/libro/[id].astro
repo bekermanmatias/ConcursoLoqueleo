@@ -1,14 +1,19 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getBookById, getAllBookIds, formatGradeLabel } from "../../lib/books";
+import { formatGradeLabel } from "../../lib/books";
 import { ageUiStyles } from "../../data/books";
+import {
+  fetchPublicObraServer,
+  fetchPublicObraSlugsServer,
+} from "../../lib/concurso-server";
 
-export function getStaticPaths() {
-  return getAllBookIds().map((id) => ({ params: { id } }));
+export async function getStaticPaths() {
+  const slugs = await fetchPublicObraSlugsServer();
+  return slugs.map((id) => ({ params: { id } }));
 }
 
 const { id } = Astro.params;
-const book = getBookById(id!);
+const book = await fetchPublicObraServer(id!);
 
 if (!book) {
   return Astro.redirect("/");
@@ -126,8 +131,10 @@ const gradeLabel = formatGradeLabel(book.grade);
           <div class="book-detail-actions mt-6">
             <a
               href={book.basesPdf}
-              download={`Bases LQL2026 ${book.title.split(",")[0]}.pdf`}
+              download={`Bases ${book.title.split(",")[0]}.pdf`}
               class="challenge-instructions-btn"
+              target="_blank"
+              rel="noreferrer"
             >
               Ver indicaciones completas
             </a>

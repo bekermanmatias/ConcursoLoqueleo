@@ -61,6 +61,51 @@ export interface EvaluacionJurado {
   fechaEvaluacion: string;
 }
 
+export interface Concurso {
+  id: number;
+  codigo: string;
+  nombre: string;
+  anio: number;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  inscripcionesAbiertas: boolean;
+  activo: boolean;
+  terminosPdf: string | null;
+  createdAt: string;
+}
+
+export interface ConcursoSummary extends Concurso {
+  totalTrabajos: number;
+  totalParticipantes: number;
+}
+
+export interface ConcursoObra {
+  id: number;
+  concursoId: number;
+  gradoId: number;
+  gradoLabel: string;
+  bookSlug: string | null;
+  nombreObra: string;
+  autor: string | null;
+  rol: string | null;
+  edad: string | null;
+  tipoReto: string;
+  coverUrl: string | null;
+  basesPdf: string | null;
+  challengeIntro: string | null;
+  challengeHeadline: string | null;
+  descripcionReto: string | null;
+  entregable: string | null;
+  formatos: string[];
+  requisitos: string[];
+  notaParticipacion: string | null;
+  activo: boolean;
+}
+
+export interface ConcursoDetail extends ConcursoSummary {
+  obras: ConcursoObra[];
+}
+
 export interface InternalStats {
   totalTrabajos: number;
   totalParticipantes: number;

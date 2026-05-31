@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import ConfirmationView from "../../../components/flow/ConfirmationView.tsx";
-import { getAllBookIds } from "../../../lib/books";
+import { fetchPublicObraSlugsServer } from "../../../lib/concurso-server";
 
-export function getStaticPaths() {
-  return getAllBookIds().map((id) => ({ params: { id } }));
+export async function getStaticPaths() {
+  const slugs = await fetchPublicObraSlugsServer();
+  return slugs.map((id) => ({ params: { id } }));
 }
 ---
 

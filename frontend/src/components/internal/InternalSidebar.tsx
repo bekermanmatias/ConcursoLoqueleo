@@ -16,6 +16,7 @@ interface SidebarProps {
   user: InternalUser;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  panelAnio?: number | null;
 }
 
 export default function InternalSidebar({
@@ -23,6 +24,7 @@ export default function InternalSidebar({
   user,
   mobileOpen,
   onCloseMobile,
+  panelAnio,
 }: SidebarProps) {
   const items = navItemsForRole(user.rol);
 
@@ -53,7 +55,9 @@ export default function InternalSidebar({
           <a href="/" className="internal-sidebar-logo" aria-label="Ir al sitio del concurso">
             <img src="/loqueleo.png" alt="Loqueleo" width="130" height="44" />
           </a>
-          <p className="internal-sidebar-eyebrow">Panel interno · 2026</p>
+          <p className="internal-sidebar-eyebrow">
+            Panel interno · {panelAnio ?? new Date().getFullYear()}
+          </p>
         </div>
 
         <div className="internal-sidebar-user">

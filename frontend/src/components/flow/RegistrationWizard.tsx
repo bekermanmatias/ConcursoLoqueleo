@@ -29,13 +29,20 @@ interface Props {
   bookTitle: string;
   bookGrade: Grado;
   accent: string;
+  termsPdfUrl: string;
 }
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accent }: Props) {
+export default function RegistrationWizard({
+  bookId,
+  bookTitle,
+  bookGrade,
+  accent,
+  termsPdfUrl,
+}: Props) {
   const [step, setStep] = useState<WizardStep>(1);
   const [departamentoId, setDepartamentoId] = useState("");
   const [provinciaId, setProvinciaId] = useState("");
@@ -488,6 +495,19 @@ export default function RegistrationWizard({ bookId, bookTitle, bookGrade, accen
                   onValidationError={setFileError}
                   error={fileError}
                 />
+                <p className="wizard-hint mt-4 text-sm text-gray-600">
+                  Al enviar tu trabajo aceptas los{" "}
+                  <a
+                    href={termsPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline underline-offset-2"
+                    style={{ color: accent }}
+                  >
+                    términos y condiciones
+                  </a>{" "}
+                  del concurso.
+                </p>
               </div>
             )}
           </div>

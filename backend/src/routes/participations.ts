@@ -123,6 +123,12 @@ participationsRouter.post("/", async (req, res) => {
             code: "GRADO_NOT_FOUND",
           });
           return;
+        case "OBRA_NOT_FOUND":
+          res.status(400).json({
+            error: "El libro o grado seleccionado no está disponible en el concurso activo.",
+            code: "OBRA_NOT_FOUND",
+          });
+          return;
         case "RETO_NOT_FOUND":
           res.status(400).json({
             error: "No encontramos el reto de este libro.",

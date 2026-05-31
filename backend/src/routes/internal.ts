@@ -1,5 +1,7 @@
 import { Router, type Request } from "express";
+import multer from "multer";
 import path from "node:path";
+import { config } from "../config.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import {
   countAdminUsers,
@@ -9,6 +11,21 @@ import {
   listInternalUsersPaginated,
   updateInternalUser,
 } from "../services/auth.js";
+import {
+  activateConcurso,
+  createConcurso,
+  getActiveConcurso,
+  getActiveConcursoCodigo,
+  getConcursoById,
+  getConcursoDetail,
+  listConcursos,
+  OBRA_COVER_MAX_BYTES,
+  setConcursoObraBasesPdf,
+  setConcursoObraCoverUrl,
+  setConcursoTerminosPdf,
+  updateConcurso,
+  updateConcursoObra,
+} from "../services/concursos.js";
 import {
   bulkDeleteTrabajos,
   bulkUpdateTrabajosEstado,
@@ -22,10 +39,40 @@ import {
   updateTrabajoEstado,
   upsertEvaluacion,
 } from "../services/trabajos.js";
-import { createLocalReadStream } from "../services/storage.js";
+import { createLocalReadStream, saveConcursoConfigCoverImage, saveConcursoConfigPdf } from "../services/storage.js";
 import type { EstadoTrabajo, RolUsuario } from "../types/internal.js";
 
 export const internalRouter = Router();
+
+const adminPdfUpload = multer({
+  dest: path.join(config.storage.localDir, ".tmp"),
+  limits: { fileSize: config.limits.pdfMaxBytes, files: 1 },
+});
+
+const adminCoverUpload = multer({
+  dest: path.join(config.storage.localDir, ".tmp"),
+  limits: { fileSize: OBRA_COVER_MAX_BYTES, files: 1 },
+});
+
+function parseOptionalString(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return String(value);
+}
+
+function parseOptionalStringArray(value: unknown): string[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return undefined;
+  return value.map((item) => String(item).trim()).filter(Boolean);
+}
+
+function contentTypeForStorageKey(storageKey: string): string {
+  const ext = path.extname(storageKey).toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  return "application/pdf";
+}
 
 internalRouter.use(requireAuth);
 
@@ -109,8 +156,263 @@ function parseTrabajoIds(value: unknown): number[] | null {
   return ids.length === value.length ? ids : null;
 }
 
-internalRouter.get("/stats", requireRole("admin"), async (_req, res) => {
-  res.json(await getInternalStats());
+internalRouter.get("/concursos/activo", requireRole("admin", "jurado"), async (_req, res) => {
+  const concurso = await getActiveConcurso();
+  if (!concurso) {
+    res.status(404).json({ error: "No hay un concurso activo." });
+    return;
+  }
+  res.json(concurso);
+});
+
+internalRouter.get("/concursos", requireRole("admin"), async (_req, res) => {
+  res.json(await listConcursos());
+});
+
+internalRouter.get("/concursos/:id(\\d+)", requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const concurso = await getConcursoDetail(id);
+  if (!concurso) {
+    res.status(404).json({ error: "Concurso no encontrado." });
+    return;
+  }
+  res.json(concurso);
+});
+
+internalRouter.patch("/concursos/:id(\\d+)", requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const concurso = await updateConcurso(id, {
+      nombre: req.body.nombre ? String(req.body.nombre) : undefined,
+      anio: req.body.anio !== undefined ? Number(req.body.anio) : undefined,
+      fechaInicio:
+        req.body.fechaInicio === null
+          ? null
+          : req.body.fechaInicio
+            ? String(req.body.fechaInicio)
+            : undefined,
+      fechaFin:
+        req.body.fechaFin === null
+          ? null
+          : req.body.fechaFin
+            ? String(req.body.fechaFin)
+            : undefined,
+      inscripcionesAbiertas:
+        req.body.inscripcionesAbiertas !== undefined
+          ? Boolean(req.body.inscripcionesAbiertas)
+          : undefined,
+      terminosPdf:
+        req.body.terminosPdf === null
+          ? null
+          : req.body.terminosPdf !== undefined
+            ? String(req.body.terminosPdf)
+            : undefined,
+    });
+    if (!concurso) {
+      res.status(404).json({ error: "Concurso no encontrado." });
+      return;
+    }
+    const detail = await getConcursoDetail(id);
+    res.json(detail);
+  } catch {
+    res.status(400).json({ error: "Datos del concurso inválidos." });
+  }
+});
+
+internalRouter.post("/concursos", requireRole("admin"), async (req, res) => {
+  try {
+    const concurso = await createConcurso({
+      codigo: String(req.body.codigo ?? ""),
+      nombre: String(req.body.nombre ?? ""),
+      anio: Number(req.body.anio),
+      fechaInicio: req.body.fechaInicio ? String(req.body.fechaInicio) : null,
+      fechaFin: req.body.fechaFin ? String(req.body.fechaFin) : null,
+      inscripcionesAbiertas: Boolean(req.body.inscripcionesAbiertas),
+      clonarDesdeId: req.body.clonarDesdeId ? Number(req.body.clonarDesdeId) : undefined,
+    });
+    res.status(201).json(concurso);
+  } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_DATA") {
+      res.status(400).json({ error: "Datos del concurso inválidos." });
+      return;
+    }
+    res.status(409).json({ error: "Ya existe un concurso con ese código." });
+  }
+});
+
+internalRouter.patch(
+  "/concursos/:id(\\d+)/obras/:obraId(\\d+)",
+  requireRole("admin"),
+  async (req, res) => {
+    const concursoId = Number(req.params.id);
+    const obraId = Number(req.params.obraId);
+    const obra = await updateConcursoObra(concursoId, obraId, {
+      bookSlug: parseOptionalString(req.body.bookSlug),
+      nombreObra: req.body.nombreObra ? String(req.body.nombreObra) : undefined,
+      autor: parseOptionalString(req.body.autor),
+      rol: parseOptionalString(req.body.rol),
+      edad: parseOptionalString(req.body.edad),
+      tipoReto: req.body.tipoReto ? String(req.body.tipoReto) : undefined,
+      coverUrl: parseOptionalString(req.body.coverUrl),
+      basesPdf: parseOptionalString(req.body.basesPdf),
+      challengeIntro: parseOptionalString(req.body.challengeIntro),
+      challengeHeadline: parseOptionalString(req.body.challengeHeadline),
+      descripcionReto: parseOptionalString(req.body.descripcionReto),
+      entregable: parseOptionalString(req.body.entregable),
+      formatos: parseOptionalStringArray(req.body.formatos),
+      requisitos: parseOptionalStringArray(req.body.requisitos),
+      notaParticipacion: parseOptionalString(req.body.notaParticipacion),
+      activo: req.body.activo !== undefined ? Boolean(req.body.activo) : undefined,
+    });
+    if (!obra) {
+      res.status(404).json({ error: "Obra no encontrada." });
+      return;
+    }
+    res.json(obra);
+  },
+);
+
+internalRouter.post(
+  "/concursos/:id(\\d+)/obras/:obraId(\\d+)/cover-image",
+  requireRole("admin"),
+  adminCoverUpload.single("file"),
+  async (req, res) => {
+    const concursoId = Number(req.params.id);
+    const obraId = Number(req.params.obraId);
+    const concurso = await getConcursoById(concursoId);
+    if (!concurso || !req.file?.path) {
+      res.status(400).json({ error: "Archivo o concurso inválido." });
+      return;
+    }
+    const allowed = ["image/png", "image/jpeg", "image/webp"];
+    if (!allowed.includes(req.file.mimetype)) {
+      res.status(400).json({ error: "Solo se permiten imágenes PNG, JPG o WebP." });
+      return;
+    }
+    try {
+      const stored = await saveConcursoConfigCoverImage(
+        concurso.codigo,
+        obraId,
+        req.file.path,
+        req.file.mimetype,
+        OBRA_COVER_MAX_BYTES,
+      );
+      const obra = await setConcursoObraCoverUrl(concursoId, obraId, stored);
+      if (!obra) {
+        res.status(404).json({ error: "Obra no encontrada." });
+        return;
+      }
+      res.json(obra);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "UNSUPPORTED_IMAGE_TYPE") {
+          res.status(400).json({ error: "Formato de imagen no soportado." });
+          return;
+        }
+        if (error.message === "IMAGE_SIZE_INVALID") {
+          res.status(400).json({ error: "La imagen supera 2 MB o está vacía." });
+          return;
+        }
+        if (error.message === "INVALID_IMAGE_CONTENT") {
+          res.status(400).json({ error: "El archivo no es una imagen válida." });
+          return;
+        }
+      }
+      res.status(500).json({ error: "No se pudo guardar la portada." });
+    }
+  },
+);
+
+internalRouter.post(
+  "/concursos/:id(\\d+)/terminos-pdf",
+  requireRole("admin"),
+  adminPdfUpload.single("file"),
+  async (req, res) => {
+    const id = Number(req.params.id);
+    const concurso = await getConcursoById(id);
+    if (!concurso || !req.file?.path) {
+      res.status(400).json({ error: "Archivo o concurso inválido." });
+      return;
+    }
+    if (req.file.mimetype !== "application/pdf") {
+      res.status(400).json({ error: "Solo se permiten archivos PDF." });
+      return;
+    }
+    const stored = await saveConcursoConfigPdf(
+      concurso.codigo,
+      "terminos.pdf",
+      req.file.path,
+    );
+    const updated = await setConcursoTerminosPdf(id, stored);
+    res.json(updated);
+  },
+);
+
+internalRouter.post(
+  "/concursos/:id(\\d+)/obras/:obraId(\\d+)/bases-pdf",
+  requireRole("admin"),
+  adminPdfUpload.single("file"),
+  async (req, res) => {
+    const concursoId = Number(req.params.id);
+    const obraId = Number(req.params.obraId);
+    const concurso = await getConcursoById(concursoId);
+    if (!concurso || !req.file?.path) {
+      res.status(400).json({ error: "Archivo o concurso inválido." });
+      return;
+    }
+    if (req.file.mimetype !== "application/pdf") {
+      res.status(400).json({ error: "Solo se permiten archivos PDF." });
+      return;
+    }
+    const stored = await saveConcursoConfigPdf(
+      concurso.codigo,
+      `bases-${obraId}.pdf`,
+      req.file.path,
+    );
+    const obra = await setConcursoObraBasesPdf(concursoId, obraId, stored);
+    if (!obra) {
+      res.status(404).json({ error: "Obra no encontrada." });
+      return;
+    }
+    res.json(obra);
+  },
+);
+
+internalRouter.post("/concursos/:id(\\d+)/activar", requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const concurso = await activateConcurso(id);
+  if (!concurso) {
+    res.status(404).json({ error: "Concurso no encontrado." });
+    return;
+  }
+  res.json(concurso);
+});
+
+internalRouter.get("/documentos", requireRole("admin", "jurado"), async (req, res) => {
+  const raw = String(req.query.path ?? "");
+  if (!raw.startsWith("local://")) {
+    res.status(400).json({ error: "Ruta inválida." });
+    return;
+  }
+  const storageKey = raw.slice("local://".length);
+  const stream = createLocalReadStream(storageKey);
+  if (!stream) {
+    res.status(404).json({ error: "Documento no encontrado." });
+    return;
+  }
+  const contentType = contentTypeForStorageKey(storageKey);
+  res.setHeader("Content-Type", contentType);
+  if (contentType === "application/pdf") {
+    res.setHeader("Content-Disposition", "inline");
+  }
+  stream.pipe(res);
+});
+
+internalRouter.get("/stats", requireRole("admin"), async (req, res) => {
+  const codigoConcurso = req.query.codigoConcurso
+    ? String(req.query.codigoConcurso)
+    : await getActiveConcursoCodigo();
+  res.json(await getInternalStats(codigoConcurso));
 });
 
 internalRouter.get("/usuarios", requireRole("admin"), async (req, res) => {
@@ -156,9 +458,9 @@ internalRouter.post("/usuarios", requireRole("admin"), async (req, res) => {
   }
 });
 
-function parseRol(value: unknown): RolUsuario | null {
+function parseRol(value: unknown): RolUsuario | undefined {
   const rol = String(value ?? "");
-  return rol === "admin" || rol === "jurado" ? rol : null;
+  return rol === "admin" || rol === "jurado" ? rol : undefined;
 }
 
 async function assertCanDemoteAdmin(
@@ -285,6 +587,10 @@ internalRouter.get("/trabajos", requireRole("admin", "jurado"), async (req, res)
     return;
   }
 
+  const codigoConcurso = req.query.codigoConcurso
+    ? String(req.query.codigoConcurso)
+    : await getActiveConcursoCodigo();
+
   const data = await listTrabajos({
     estado: query.estado,
     q: query.q,
@@ -300,6 +606,7 @@ internalRouter.get("/trabajos", requireRole("admin", "jurado"), async (req, res)
     fechaHasta: query.fechaHasta,
     evaluacion: query.evaluacion,
     juradoId: query.evaluacion ? req.user!.id : undefined,
+    codigoConcurso,
     page: query.page,
     limit: query.limit,
     offset: query.offset,

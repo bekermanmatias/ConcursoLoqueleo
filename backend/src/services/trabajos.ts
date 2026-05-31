@@ -1,5 +1,4 @@
 import { pool } from "../db/pool.js";
-import { slugFromBookTitle } from "../data/books.js";
 import type {
   EstadoTrabajo,
   InternalStats,
@@ -35,6 +34,7 @@ const BASE_SELECT = `
     p.docente,
     p.email_docente,
     r.nombre_obra,
+    co.book_slug,
     c.nombre AS colegio,
     g.nombre AS grado_nombre,
     g.nivel AS grado_nivel,
@@ -47,6 +47,8 @@ const BASE_SELECT = `
   JOIN colegios c ON c.id = p.colegio_id
   JOIN grados g ON g.id = p.grado_id
   LEFT JOIN ubicaciones u ON u.id = c.ubicacion_id
+  LEFT JOIN concursos cc ON cc.codigo = t.codigo_concurso
+  LEFT JOIN concurso_obras co ON co.concurso_id = cc.id AND co.grado_id = r.grado_id
 `;
 
 interface TrabajoRow {
@@ -66,6 +68,7 @@ interface TrabajoRow {
   docente: string;
   email_docente: string;
   nombre_obra: string;
+  book_slug: string | null;
   colegio: string;
   grado_nombre: string;
   grado_nivel: string;
@@ -81,7 +84,7 @@ function mapListItem(row: TrabajoRow): TrabajoListItem {
     dni: row.dni,
     concursante: row.concursante,
     bookTitle: row.nombre_obra,
-    bookId: slugFromBookTitle(row.nombre_obra) ?? row.nombre_obra,
+    bookId: row.book_slug ?? row.nombre_obra,
     colegio: row.colegio,
     grado: `${row.grado_nombre} ${row.grado_nivel}`,
     departamento: row.departamento,
@@ -115,6 +118,7 @@ export interface ListTrabajosOptions {
   fechaHasta?: string;
   evaluacion?: EvaluacionFiltro;
   juradoId?: number;
+  codigoConcurso?: string;
   page?: number;
   limit?: number;
   offset?: number;
@@ -160,6 +164,11 @@ function buildListTrabajosWhere(options: ListTrabajosOptions): {
   if (options.estado) {
     params.push(options.estado);
     where.push(`t.estado = $${params.length}`);
+  }
+
+  if (options.codigoConcurso) {
+    params.push(options.codigoConcurso);
+    where.push(`t.codigo_concurso = $${params.length}`);
   }
 
   if (options.q?.trim()) {
@@ -364,22 +373,31 @@ export async function setPermiteReenvio(
   return getTrabajoById(id);
 }
 
-export async function getInternalStats(): Promise<InternalStats> {
+export async function getInternalStats(codigoConcurso?: string): Promise<InternalStats> {
+  const params: unknown[] = [];
+  const whereSql = codigoConcurso ? "WHERE codigo_concurso = $1" : "";
+  if (codigoConcurso) params.push(codigoConcurso);
+
   const totalResult = await pool.query<{ total: string }>(
-    `SELECT COUNT(*)::text AS total FROM trabajos`,
+    `SELECT COUNT(*)::text AS total FROM trabajos ${whereSql}`,
+    params,
   );
   const participantesResult = await pool.query<{ total: string }>(
-    `SELECT COUNT(DISTINCT participante_id)::text AS total FROM trabajos`,
+    `SELECT COUNT(DISTINCT participante_id)::text AS total FROM trabajos ${whereSql}`,
+    params,
   );
   const byEstado = await pool.query<{ estado: EstadoTrabajo; total: string }>(
-    `SELECT estado, COUNT(*)::text AS total FROM trabajos GROUP BY estado`,
+    `SELECT estado, COUNT(*)::text AS total FROM trabajos ${whereSql} GROUP BY estado`,
+    params,
   );
   const byDia = await pool.query<{ fecha: string; cantidad: string }>(
     `SELECT (fecha_envio AT TIME ZONE 'America/Lima')::date::text AS fecha,
             COUNT(*)::text AS cantidad
      FROM trabajos
+     ${whereSql}
      GROUP BY 1
      ORDER BY 1`,
+    params,
   );
 
   const porEstado: InternalStats["porEstado"] = {

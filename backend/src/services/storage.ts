@@ -306,3 +306,65 @@ export function createLocalReadStream(storageKey: string) {
   if (!existsSync(filePath)) return null;
   return createReadStream(filePath);
 }
+
+export async function saveConcursoConfigPdf(
+  codigoConcurso: string,
+  fileName: string,
+  tmpPath: string,
+): Promise<string> {
+  const safeCodigo = sanitizeSegment(codigoConcurso);
+  const safeName = path.basename(fileName).replace(/[^a-zA-Z0-9._-]/g, "_");
+  const relativeDir = path.join("config", safeCodigo);
+  const destDir = path.join(config.storage.localDir, relativeDir);
+  await mkdir(destDir, { recursive: true });
+  const destPath = path.join(destDir, safeName);
+  await copyFile(tmpPath, destPath);
+  return `local://${relativeDir}/${safeName}`.replace(/\\/g, "/");
+}
+
+const COVER_IMAGE_TYPES: Record<string, string> = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+};
+
+export function coverExtensionForMime(mime: string): string | null {
+  return COVER_IMAGE_TYPES[mime] ?? null;
+}
+
+export async function saveConcursoConfigCoverImage(
+  codigoConcurso: string,
+  obraId: number,
+  tmpPath: string,
+  mime: string,
+  maxBytes: number,
+): Promise<string> {
+  const ext = coverExtensionForMime(mime);
+  if (!ext) {
+    throw new Error("UNSUPPORTED_IMAGE_TYPE");
+  }
+
+  const info = await stat(tmpPath);
+  if (info.size <= 0 || info.size > maxBytes) {
+    throw new Error("IMAGE_SIZE_INVALID");
+  }
+
+  const head = await readFileHead(tmpPath, 12);
+  const valid =
+    (mime === "image/png" && head.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) ||
+    (mime === "image/jpeg" && head[0] === 0xff && head[1] === 0xd8) ||
+    (mime === "image/webp" && head.subarray(0, 4).toString("ascii") === "RIFF" && head.subarray(8, 12).toString("ascii") === "WEBP");
+
+  if (!valid) {
+    throw new Error("INVALID_IMAGE_CONTENT");
+  }
+
+  const safeCodigo = sanitizeSegment(codigoConcurso);
+  const fileName = `cover-${obraId}${ext}`;
+  const relativeDir = path.join("config", safeCodigo);
+  const destDir = path.join(config.storage.localDir, relativeDir);
+  await mkdir(destDir, { recursive: true });
+  const destPath = path.join(destDir, fileName);
+  await copyFile(tmpPath, destPath);
+  return `local://${relativeDir}/${fileName}`.replace(/\\/g, "/");
+}
