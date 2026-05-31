@@ -82,6 +82,13 @@ function mapParticipationError(status: number, body: ApiErrorBody | null): Parti
         code,
       );
     }
+    if (code === "FILE_FORMAT_NOT_ALLOWED") {
+      return new ParticipationApiError(
+        raw || "El formato del archivo no está permitido para este reto.",
+        status,
+        code,
+      );
+    }
     if (raw === "DNI del estudiante inválido") {
       return new ParticipationApiError("Escribe tu DNI con 8 números.", status, code);
     }
@@ -110,6 +117,13 @@ function mapParticipationError(status: number, body: ApiErrorBody | null): Parti
   }
 
   if (status === 403) {
+    if (code === "INSCRIPCIONES_CERRADAS") {
+      return new ParticipationApiError(
+        raw || "Las inscripciones están cerradas. Ya no es posible enviar trabajos.",
+        status,
+        code,
+      );
+    }
     return new ParticipationApiError(
       raw || "No tienes permiso para realizar esta acción.",
       status,

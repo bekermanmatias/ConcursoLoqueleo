@@ -3,8 +3,11 @@ import { pool } from "../db/pool.js";
 import {
   findActiveObraForParticipation,
   findBookSlugByObraTitle,
+  getActiveConcurso,
   getActiveConcursoCodigo,
 } from "./concursos.js";
+import { assertInscripcionesAbiertas } from "../utils/inscripciones.js";
+import { assertFileAllowedByFormatos } from "../utils/file-formats.js";
 import { assertLocalObjectReady } from "./storage.js";
 import {
   buildArchivoUrl,
@@ -160,10 +163,22 @@ async function findRetoId(bookId: string, bookTitle: string, gradoLabel: string)
 export async function createParticipation(
   input: CreateParticipationInput,
 ): Promise<ParticipationRecord> {
+  const concurso = await getActiveConcurso();
+  assertInscripcionesAbiertas(concurso);
+
   const existing = await findByDni(input.dni);
   if (existing && !canReupload(existing)) {
     throw new Error("DNI_ALREADY_REGISTERED");
   }
+
+  const obra = await findActiveObraForParticipation(input.bookId, input.grado);
+  if (!obra) {
+    throw new Error("OBRA_NOT_FOUND");
+  }
+  if (input.bookTitle.trim() && input.bookTitle.trim() !== obra.nombreObra) {
+    throw new Error("OBRA_NOT_FOUND");
+  }
+  assertFileAllowedByFormatos(input.fileName, obra.formatos);
 
   const gradoId = await findGradoId(input.grado);
   const retoId = await findRetoId(input.bookId, input.bookTitle, input.grado);

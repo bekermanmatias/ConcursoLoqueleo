@@ -8,6 +8,8 @@ import {
   fetchPublicConcursoServer,
 } from "../../../lib/concurso-server";
 import { resolveTermsPdfUrl } from "../../../lib/legal";
+import { inscripcionesEstanAbiertas } from "../../../lib/inscripciones";
+import InscripcionesCerradas from "../../../components/flow/InscripcionesCerradas.tsx";
 
 export async function getStaticPaths() {
   const slugs = await fetchPublicObraSlugsServer();
@@ -24,6 +26,7 @@ if (!book) {
 const { accent } = ageUiStyles[book.age];
 const activeConcurso = await fetchPublicConcursoServer();
 const termsPdfUrl = resolveTermsPdfUrl(activeConcurso?.terminosPdf);
+const inscripcionesAbiertas = inscripcionesEstanAbiertas(activeConcurso);
 ---
 
 <BaseLayout
@@ -33,14 +36,19 @@ const termsPdfUrl = resolveTermsPdfUrl(activeConcurso?.terminosPdf);
   <div class="book-detail-page book-detail-page--participar">
     <div class="book-detail-inner relative z-10">
       <div class="participar-form">
-        <RegistrationWizard
-          client:load
-          bookId={book.id}
-          bookTitle={book.title}
-          bookGrade={book.grade}
-          accent={accent}
-          termsPdfUrl={termsPdfUrl}
-        />
+        {inscripcionesAbiertas ? (
+          <RegistrationWizard
+            client:load
+            bookId={book.id}
+            bookTitle={book.title}
+            bookGrade={book.grade}
+            bookFormats={book.formats}
+            accent={accent}
+            termsPdfUrl={termsPdfUrl}
+          />
+        ) : (
+          <InscripcionesCerradas client:load bookId={book.id} bookTitle={book.title} />
+        )}
       </div>
     </div>
 

@@ -4,6 +4,14 @@ import FormSelect from "./FormSelect";
 import PersonNameFields from "./PersonNameFields";
 import WizardAlert from "./WizardAlert";
 import { joinPersonName } from "../../lib/person-name";
+import { fetchPublicConcurso } from "../../lib/concurso";
+import { inscripcionesEstanAbiertas } from "../../lib/inscripciones";
+import {
+  normalizePersonNamePart,
+  validateDocenteEmail,
+  validateFileForFormatos,
+  validatePersonNamePart,
+} from "../../lib/participation-validation";
 import { WizardJourneyHead, WizardProgressBar, type WizardStep } from "./WizardProgress";
 import {
   getParticipationErrorMessage,
@@ -31,18 +39,16 @@ interface Props {
   bookId: string;
   bookTitle: string;
   bookGrade: Grado;
+  bookFormats: string[];
   accent: string;
   termsPdfUrl: string;
-}
-
-function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export default function RegistrationWizard({
   bookId,
   bookTitle,
   bookGrade,
+  bookFormats,
   accent,
   termsPdfUrl,
 }: Props) {
@@ -165,24 +171,35 @@ export default function RegistrationWizard({
     }
     if (currentStep === 2) {
       if (!colegio) return "Elige tu colegio para continuar.";
-      if (!docenteNombres.trim()) return "Escribe el nombre del docente.";
-      if (!docenteApellidos.trim()) return "Escribe el apellido del docente.";
-      if (!isValidEmail(emailDocente)) return "Escribe un correo válido del docente.";
+      const docenteNombreErr =
+        validatePersonNamePart(docenteNombres, "docente", "nombres") ??
+        validatePersonNamePart(docenteApellidos, "docente", "apellidos");
+      if (docenteNombreErr) return docenteNombreErr;
+      const emailErr = validateDocenteEmail(emailDocente);
+      if (emailErr) return emailErr;
       return null;
     }
     if (currentStep === 3) {
-      if (!concursanteNombres.trim()) return "Escribe tu nombre.";
-      if (!concursanteApellidos.trim()) return "Escribe tu apellido.";
+      const estudianteNombreErr =
+        validatePersonNamePart(concursanteNombres, "estudiante", "nombres") ??
+        validatePersonNamePart(concursanteApellidos, "estudiante", "apellidos");
+      if (estudianteNombreErr) return estudianteNombreErr;
       if (dniLimpio.length !== 8) return "Escribe tu DNI (8 números).";
       if (!sexo) return "Elige tu género.";
       return null;
     }
     if (currentStep === 4) {
-      if (!apoderadoNombres.trim()) return "Escribe el nombre de tu apoderado.";
-      if (!apoderadoApellidos.trim()) return "Escribe el apellido de tu apoderado.";
+      const apoderadoNombreErr =
+        validatePersonNamePart(apoderadoNombres, "apoderado", "nombres") ??
+        validatePersonNamePart(apoderadoApellidos, "apoderado", "apellidos");
+      if (apoderadoNombreErr) return apoderadoNombreErr;
       if (dniApoderadoLimpio.length !== 8) return "Escribe el DNI de tu apoderado (8 números).";
       if (!celularApoderado.trim()) return "Escribe un celular de contacto.";
       return null;
+    }
+    if (currentStep === 5 && file) {
+      const fileErr = validateFileForFormatos(file.name, bookFormats);
+      if (fileErr) return fileErr;
     }
     return null;
   };
@@ -216,6 +233,11 @@ export default function RegistrationWizard({
   };
 
   const submit = async () => {
+    const stepErr = validateStep(5);
+    if (stepErr) {
+      setStepError(stepErr);
+      return;
+    }
     if (!file) {
       setFileError("Falta subir tu trabajo. ¡Elige un archivo para continuar!");
       return;
@@ -229,6 +251,13 @@ export default function RegistrationWizard({
     setStepError("");
 
     try {
+      const concurso = await fetchPublicConcurso();
+      if (!inscripcionesEstanAbiertas(concurso)) {
+        setStepError("Las inscripciones están cerradas. Ya no es posible enviar trabajos.");
+        setSubmitting(false);
+        return;
+      }
+
       const uploaded = await uploadParticipationFile(file, bookId, dniLimpio);
       const record = await saveParticipation({
         dni: dniLimpio,
@@ -240,15 +269,15 @@ export default function RegistrationWizard({
         departamento,
         provincia,
         distrito,
-        concursanteNombres: concursanteNombres.trim(),
-        concursanteApellidos: concursanteApellidos.trim(),
+        concursanteNombres: normalizePersonNamePart(concursanteNombres),
+        concursanteApellidos: normalizePersonNamePart(concursanteApellidos),
         sexo: sexo as Sexo,
-        apoderadoNombres: apoderadoNombres.trim(),
-        apoderadoApellidos: apoderadoApellidos.trim(),
+        apoderadoNombres: normalizePersonNamePart(apoderadoNombres),
+        apoderadoApellidos: normalizePersonNamePart(apoderadoApellidos),
         dniApoderado: dniApoderadoLimpio,
         celularApoderado: celularApoderado.trim(),
-        docenteNombres: docenteNombres.trim(),
-        docenteApellidos: docenteApellidos.trim(),
+        docenteNombres: normalizePersonNamePart(docenteNombres),
+        docenteApellidos: normalizePersonNamePart(docenteApellidos),
         emailDocente: emailDocente.trim(),
         fileName: uploaded.fileName,
         fileUrl: uploaded.fileUrl,
@@ -400,6 +429,7 @@ export default function RegistrationWizard({
                     type="email"
                     className="form-field"
                     placeholder="nombre@colegio.edu.pe"
+                    maxLength={255}
                     value={emailDocente}
                     onChange={(e) => {
                       setEmailDocente(e.target.value);
@@ -507,6 +537,7 @@ export default function RegistrationWizard({
             {step === 5 && (
               <div className="wizard-step">
                 <FileDropzone
+                  allowedFormatos={bookFormats}
                   onFile={(f) => {
                     setFile(f);
                     if (f) setFileError("");

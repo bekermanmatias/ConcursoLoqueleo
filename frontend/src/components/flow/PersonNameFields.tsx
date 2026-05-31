@@ -1,3 +1,5 @@
+import { PERSON_NAME_MAX_LENGTH } from "../../lib/participation-validation";
+
 interface Props {
   nombresLabel: string;
   apellidosLabel: string;
@@ -27,6 +29,7 @@ export default function PersonNameFields({
           type="text"
           className="form-field"
           placeholder={nombresPlaceholder}
+          maxLength={PERSON_NAME_MAX_LENGTH}
           value={nombres}
           onChange={(e) => onNombresChange(e.target.value)}
         />
@@ -37,6 +40,7 @@ export default function PersonNameFields({
           type="text"
           className="form-field"
           placeholder={apellidosPlaceholder}
+          maxLength={PERSON_NAME_MAX_LENGTH}
           value={apellidos}
           onChange={(e) => onApellidosChange(e.target.value)}
         />

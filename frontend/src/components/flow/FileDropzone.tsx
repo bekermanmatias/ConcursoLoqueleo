@@ -1,41 +1,62 @@
 import { useCallback, useRef, useState } from "react";
+import {
+  formatosAcceptAttribute,
+  formatosHintLabel,
+  validateFileForFormatos,
+} from "../../lib/participation-validation";
 
 const PDF_MAX_MB = 10;
 const VIDEO_MAX_MB = 250;
-const ACCEPT = ".pdf,.mp4,.mov";
 
 interface Props {
   onFile: (file: File | null) => void;
   onValidationError?: (message: string) => void;
   error?: string;
+  allowedFormatos: string[];
 }
 
 function maxBytesForFile(f: File): number {
   const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
   if (ext === "pdf") return PDF_MAX_MB * 1024 * 1024;
-  if (["mp4", "mov"].includes(ext)) return VIDEO_MAX_MB * 1024 * 1024;
+  if (["mp4", "mov", "mp3"].includes(ext)) return VIDEO_MAX_MB * 1024 * 1024;
+  if (["jpg", "jpeg", "png"].includes(ext)) return PDF_MAX_MB * 1024 * 1024;
   return PDF_MAX_MB * 1024 * 1024;
 }
 
 function maxLabelForFile(f: File): string {
   const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
   if (ext === "pdf") return `${PDF_MAX_MB} MB`;
-  if (["mp4", "mov"].includes(ext)) return `${VIDEO_MAX_MB} MB`;
+  if (["mp4", "mov", "mp3"].includes(ext)) return `${VIDEO_MAX_MB} MB`;
+  if (["jpg", "jpeg", "png"].includes(ext)) return `${PDF_MAX_MB} MB`;
   return `${PDF_MAX_MB} MB`;
 }
 
-export default function FileDropzone({ onFile, onValidationError, error }: Props) {
+export default function FileDropzone({
+  onFile,
+  onValidationError,
+  error,
+  allowedFormatos,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const accept = formatosAcceptAttribute(allowedFormatos);
+  const formatHint = formatosHintLabel(allowedFormatos);
 
   const validate = (f: File): string | null => {
+    const formatError = validateFileForFormatos(f.name, allowedFormatos);
+    if (formatError) return formatError;
+
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    const allowed = ["pdf", "mp4", "mov"];
-    if (!allowed.includes(ext)) {
-      return "Ese formato no sirve. Sube un PDF o un video MP4/MOV.";
+    const allowedExts = accept
+      .split(",")
+      .map((item) => item.trim().replace(/^\./, ""))
+      .filter(Boolean);
+    if (!allowedExts.includes(ext)) {
+      return `Para este reto solo puedes enviar: ${formatHint}.`;
     }
+
     const limit = maxBytesForFile(f);
     if (f.size > limit) {
       return `Tu archivo es muy pesado. El máximo para este formato es ${maxLabelForFile(f)}.`;
@@ -64,11 +85,14 @@ export default function FileDropzone({ onFile, onValidationError, error }: Props
       setFile(f);
       onFile(f);
     },
-    [onFile, onValidationError],
+    [onFile, onValidationError, allowedFormatos, accept, formatHint],
   );
 
   return (
     <div>
+      <p className="wizard-hint mb-3 text-sm text-gray-600">
+        Formatos permitidos para este reto: <strong>{formatHint}</strong>
+      </p>
       <div
         role="button"
         tabIndex={0}
@@ -98,11 +122,11 @@ export default function FileDropzone({ onFile, onValidationError, error }: Props
       >
         <p className="wizard-dropzone-title">Arrastra y suelta tu trabajo aquí</p>
         <p className="wizard-dropzone-or">o</p>
-        <p className="wizard-dropzone-cta">Haz clic para subir tu PDF o video</p>
+        <p className="wizard-dropzone-cta">Haz clic para subir tu archivo</p>
         <input
           ref={inputRef}
           type="file"
-          accept={ACCEPT}
+          accept={accept}
           className="sr-only"
           onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
         />
