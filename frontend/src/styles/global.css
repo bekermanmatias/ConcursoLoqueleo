@@ -24,6 +24,13 @@
 
   --site-header-height: 5.5rem;
   --scroll-anchor-offset: calc(var(--site-header-height) + 1.5rem);
+
+  /* Wizard participar — márgenes y altura útil bajo la navbar sticky */
+  --wizard-viewport-gap: clamp(1rem, 3dvh, 2.25rem);
+  --wizard-page-gap-top: clamp(0.75rem, 2dvh, 1.25rem);
+  --wizard-available-height: calc(
+    100dvh - var(--site-header-height) - var(--wizard-page-gap-top) - var(--wizard-viewport-gap)
+  );
 }
 
 @layer base {
@@ -43,6 +50,14 @@
   @media (max-width: 767px) {
     :root {
       --scroll-anchor-offset: calc(var(--site-header-height) + 1rem);
+    }
+  }
+
+  @supports not (height: 100dvh) {
+    :root {
+      --wizard-available-height: calc(
+        100vh - var(--site-header-height) - var(--wizard-page-gap-top) - var(--wizard-viewport-gap)
+      );
     }
   }
 
@@ -606,6 +621,17 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  .book-detail-page--participar {
+    padding-top: var(--wizard-page-gap-top);
+    min-height: calc(100dvh - var(--site-header-height));
+  }
+
+  @supports not (height: 100dvh) {
+    .book-detail-page--participar {
+      min-height: calc(100vh - var(--site-header-height));
+    }
+  }
+
   .book-detail-moon,
   .book-detail-stars-left {
     @apply absolute z-[1] h-auto pointer-events-none select-none;
@@ -709,24 +735,50 @@
     @apply mx-auto w-full max-w-2xl;
   }
 
+  .participar-form .wizard {
+    display: flex;
+    flex-direction: column;
+    /* viewport − navbar sticky − margen superior − margen inferior */
+    min-height: var(--wizard-available-height);
+    max-height: var(--wizard-available-height);
+  }
+
+  .participar-form .wizard-progress {
+    @apply shrink-0;
+  }
+
   .participar-form .wizard-panel {
     @apply mx-auto w-full max-w-md;
   }
 
   .wizard-main {
-    @apply flex min-h-[38rem] flex-col sm:min-h-[40rem];
+    @apply flex min-h-0 flex-1 flex-col;
   }
 
   .wizard-panel {
-    @apply mt-0 flex min-h-[32rem] flex-1 flex-col;
+    @apply mt-0 flex min-h-0 flex-1 flex-col;
   }
 
   .wizard-step-slot {
-    @apply flex-1 min-h-0;
+    @apply flex-1 min-h-0 overflow-y-auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 45%, white)
+      transparent;
+  }
+
+  .wizard-step-slot::-webkit-scrollbar {
+    width: 0.375rem;
+  }
+
+  .wizard-step-slot::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--field-accent, var(--color-brand-red)) 45%, white);
   }
 
   .wizard-footer {
-    @apply mt-auto shrink-0;
+    @apply mt-auto shrink-0 border-t border-gray-100 bg-white pt-4;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
   }
 
   .wizard-step-error {
