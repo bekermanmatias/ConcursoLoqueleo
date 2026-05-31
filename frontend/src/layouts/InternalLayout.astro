@@ -1,0 +1,39 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  variant?: "login" | "app";
+}
+
+const {
+  title = "Panel interno — Soy Loqueleo",
+  description = "Administración y jurado del Concurso Soy Loqueleo.",
+  variant = "app",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/loqueleo_minimal.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+  </head>
+  <body class:list={["internal-body", variant === "login" && "internal-body--login", variant === "app" && "internal-body--app"]}>
+    {variant === "login" ? (
+      <main class="internal-shell internal-shell--login">
+        <slot />
+      </main>
+    ) : (
+      <slot />
+    )}
+  </body>
+</html>

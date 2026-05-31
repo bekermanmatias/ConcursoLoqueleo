@@ -4,6 +4,8 @@ import { assertProductionConfig, config, isS3Enabled } from "./config.js";
 import { pool } from "./db/pool.js";
 import { runMigrations } from "./db/migrate.js";
 import { participationsRouter } from "./routes/participations.js";
+import { authRouter } from "./routes/auth.js";
+import { internalRouter } from "./routes/internal.js";
 import { ubigeoRouter } from "./routes/ubigeo.js";
 import { uploadsRouter } from "./routes/uploads.js";
 import { ensureStorageReady } from "./services/storage.js";
@@ -48,6 +50,8 @@ app.get("/api/health", async (_req, res) => {
 });
 
 app.use("/api/uploads", uploadsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/internal", internalRouter);
 app.use("/api/ubigeo", ubigeoRouter);
 app.use("/api/participations", participationsRouter);
 

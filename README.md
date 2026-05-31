@@ -136,13 +136,22 @@ El editor necesita `frontend/node_modules` para resolver la config de Astro. Doc
 
 El modelo relacional incluye: `usuarios_internos`, `ubicaciones`, `colegios`, `grados`, `retos`, `participantes`, `trabajos`, `evaluaciones`.
 
-Al arrancar el backend se ejecutan `backend/db/init.sql` y `backend/db/seed.sql`.
+Al arrancar el backend se aplican **migraciones incrementales** (`backend/db/migrations/`) registradas en `schema_migrations`, se importa ubigeo si la base está vacía y se ejecuta `seed.sql` (idempotente: no borra inscripciones existentes).
 
-**Si cambias el esquema y ya tenías datos viejos**, recrea el volumen de Postgres:
+**Reiniciar Docker ya no borra participaciones ni trabajos** mientras conserves el volumen `postgres_data`.
+
+**Para empezar de cero** (borrar todos los datos):
 
 ```bash
-docker compose down -v
-docker compose up --build
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Migraciones manuales (fuera de Docker):
+
+```bash
+cd backend
+npm run db:migrate
 ```
 
 ## Desarrollo local (Docker)

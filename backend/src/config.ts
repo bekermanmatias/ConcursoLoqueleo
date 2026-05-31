@@ -46,6 +46,10 @@ export const config = {
   },
   /** Código general del certamen (trabajos.codigo_concurso). */
   codigoConcurso: process.env.CODIGO_CONCURSO ?? "LQL2026",
+  auth: {
+    jwtSecret: process.env.JWT_SECRET ?? "dev-jwt-secret-change-me",
+    tokenTtlSeconds: Number(process.env.JWT_TTL_SECONDS ?? 60 * 60 * 8),
+  },
 };
 
 /** Valida configuración mínima para ECS + RDS + S3 en producción. */
@@ -60,6 +64,7 @@ export function assertProductionConfig(): void {
     requiredInProduction("AWS_REGION", config.storage.region);
   } else if (config.nodeEnv === "production") {
     requiredInProduction("UPLOAD_TOKEN_SECRET", process.env.UPLOAD_TOKEN_SECRET);
+    requiredInProduction("JWT_SECRET", process.env.JWT_SECRET);
   }
 }
 

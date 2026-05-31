@@ -1,0 +1,23 @@
+---
+import InternalLayout from "../../layouts/InternalLayout.astro";
+import LoginForm from "../../components/internal/LoginForm.tsx";
+import InternoGate from "../../components/internal/InternoGate.tsx";
+---
+
+<InternalLayout title="Ingreso — Panel interno" variant="login">
+  <InternoGate client:load mode="guest-only" />
+
+  <div class="internal-login-page">
+    <div class="internal-login-card">
+      <a href="/" class="internal-login-logo" aria-label="Ir al sitio del concurso">
+        <img src="/loqueleo.png" alt="Loqueleo" width="160" height="56" />
+      </a>
+      <p class="internal-kicker">Concurso Soy Loqueleo 2026</p>
+      <h1 class="section-title internal-login-title">Acceso interno</h1>
+      <p class="internal-subtitle">
+        Ingresa con tu cuenta de administración o jurado calificador.
+      </p>
+      <LoginForm client:load />
+    </div>
+  </div>
+</InternalLayout>

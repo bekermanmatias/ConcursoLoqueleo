@@ -8,7 +8,7 @@ Este documento describe cómo encaja el repositorio con el esquema acordado (Bam
 |------------|-------------|------------------|
 | **Backend** | Amazon ECR → ECS Fargate | `scripts/push-backend-ecr.ps1` |
 | **Frontend** | S3 + CloudFront | `scripts/deploy-frontend-s3.ps1` |
-| **Base de datos** | Amazon RDS PostgreSQL 14+ | Migraciones al arrancar el backend (`db/init.sql` + `db/migrations/`) |
+| **Base de datos** | Amazon RDS PostgreSQL 14+ | Migraciones incrementales al arrancar el backend (`db/migrations/` + `schema_migrations`) |
 
 ## Plan Bamboo sugerido (backend)
 

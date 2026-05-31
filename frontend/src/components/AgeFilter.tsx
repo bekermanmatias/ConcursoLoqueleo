@@ -42,18 +42,8 @@ export default function AgeFilter() {
 
             {/* libro.svg debajo del círculo */}
             <span
-              className="mt-0.5 h-3 w-10 sm:h-3.5 sm:w-11 shrink-0"
-              style={{
-                backgroundColor: bookColor,
-                WebkitMaskImage: "url('/libro.svg')",
-                WebkitMaskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                WebkitMaskSize: "contain",
-                maskImage: "url('/libro.svg')",
-                maskRepeat: "no-repeat",
-                maskPosition: "center",
-                maskSize: "contain",
-              }}
+              className="libro-mask mt-0.5 h-3 w-10 sm:h-3.5 sm:w-11 shrink-0"
+              style={{ backgroundColor: bookColor }}
             />
 
             <span className="mt-1.5 text-base sm:text-[1.05rem] leading-none font-semibold text-ink-800">

@@ -130,3 +130,41 @@ FROM participantes p
 JOIN retos r ON r.nombre_obra = 'La lonchera mentirosa'
 WHERE p.dni_estudiante = '11223344'
   AND NOT EXISTS (SELECT 1 FROM trabajos t WHERE t.participante_id = p.id);
+
+-- Usuarios internos demo (admin123 / jurado123)
+INSERT INTO usuarios_internos (nombre, email, password_hash, rol) VALUES
+  (
+    'Admin Demo',
+    'admin@loqueleo.test',
+    '$2b$10$cP1G/TW7HXC9oVRk0ZMqO.k/OO.A20gKwT9ginVFwNNeDMxhLAapO',
+    'admin'::rol_usuario
+  ),
+  (
+    'Jurado Demo',
+    'jurado@loqueleo.test',
+    '$2b$10$lxpbgr2kwaodTM/7s3EQCeX/Qq7VSXzv8dCjWh3sletx2kB.v3uXS',
+    'jurado'::rol_usuario
+  ),
+  (
+    'María Jurado',
+    'jurado2@loqueleo.test',
+    '$2b$10$lxpbgr2kwaodTM/7s3EQCeX/Qq7VSXzv8dCjWh3sletx2kB.v3uXS',
+    'jurado'::rol_usuario
+  )
+ON CONFLICT (email) DO NOTHING;
+
+-- Evaluación demo de otro jurado (visible al abrir modal como jurado@)
+INSERT INTO evaluaciones (trabajo_id, jurado_id, puntaje, comentarios, es_destacado, fecha_evaluacion)
+SELECT t.id, u.id, 88, 'Buena interpretación del personaje. La rima fluye con naturalidad; revisar la última estrofa por ritmo.', TRUE, '2026-05-25T16:20:00Z'::timestamptz
+FROM trabajos t
+JOIN usuarios_internos u ON u.email = 'jurado2@loqueleo.test'
+WHERE t.codigo_entrega = 'LQL2026-DEMO001'
+ON CONFLICT (trabajo_id, jurado_id) DO NOTHING;
+
+INSERT INTO evaluaciones (trabajo_id, jurado_id, puntaje, comentarios, es_destacado, fecha_evaluacion)
+SELECT t.id, u.id, 72, 'Video claro y bien editado. Falta profundizar en la recomendación del segundo libro.', FALSE, '2026-05-26T10:05:00Z'::timestamptz
+FROM trabajos t
+JOIN usuarios_internos u ON u.email = 'jurado2@loqueleo.test'
+WHERE t.codigo_entrega = 'LQL2026-DEMO002'
+ON CONFLICT (trabajo_id, jurado_id) DO NOTHING;
+

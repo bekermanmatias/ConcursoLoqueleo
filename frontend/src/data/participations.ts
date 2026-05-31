@@ -16,11 +16,12 @@ export interface ParticipationRecord {
   fileStatus: FileStatus;
   fileStatusDetail: string;
   estado: SubmissionStatus;
+  reuploadAllowed?: boolean;
   submittedAt: string;
 }
 
-export function canReuploadParticipation(_record: ParticipationRecord): boolean {
-  return false;
+export function canReuploadParticipation(record: ParticipationRecord): boolean {
+  return Boolean(record.reuploadAllowed);
 }
 
 export const submissionStatusLabels: Record<

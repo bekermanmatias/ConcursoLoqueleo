@@ -31,6 +31,7 @@ const SELECT_JOIN = `
     t.trabajo_enlace,
     t.tipo_archivo,
     t.estado,
+    t.permite_reenvio,
     t.fecha_envio
   FROM participantes p
   JOIN trabajos t ON t.participante_id = p.id
@@ -54,6 +55,7 @@ interface ParticipationRow {
   trabajo_enlace: string;
   tipo_archivo: "pdf" | "mp4" | "imagen";
   estado: "recibido" | "en_revision" | "finalista" | "ganador";
+  permite_reenvio: boolean;
   fecha_envio: Date;
   book_slug?: string | null;
 }
@@ -72,6 +74,7 @@ export async function findByDni(dni: string): Promise<ParticipationRecord | null
   return mapRow({
     ...result.rows[0],
     book_slug: slugFromBookTitle(result.rows[0].nombre_obra),
+    permite_reenvio: result.rows[0].permite_reenvio,
   });
 }
 

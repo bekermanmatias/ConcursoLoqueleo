@@ -99,14 +99,21 @@ export async function importUbigeo(pool: Pool): Promise<void> {
 
     for (const [id, nombreRaw, ubigeo] of deptRows) {
       await client.query(
-        `INSERT INTO departamentos (id, nombre, ubigeo) VALUES ($1, $2, $3)`,
+        `INSERT INTO departamentos (id, nombre, ubigeo) VALUES ($1, $2, $3)
+         ON CONFLICT (id) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           ubigeo = EXCLUDED.ubigeo`,
         [Number(id), formatUbigeoName(nombreRaw), ubigeo.replace(/"/g, "")],
       );
     }
 
     for (const [id, nombreRaw, ubigeo, departamentoId] of provRows) {
       await client.query(
-        `INSERT INTO provincias (id, nombre, ubigeo, departamento_id) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO provincias (id, nombre, ubigeo, departamento_id) VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           ubigeo = EXCLUDED.ubigeo,
+           departamento_id = EXCLUDED.departamento_id`,
         [Number(id), formatUbigeoName(nombreRaw), ubigeo.replace(/"/g, ""), Number(departamentoId)],
       );
     }
@@ -114,7 +121,12 @@ export async function importUbigeo(pool: Pool): Promise<void> {
     for (const [id, nombreRaw, ubigeo, provinciaId, departamentoId] of distRows) {
       await client.query(
         `INSERT INTO distritos (id, nombre, ubigeo, provincia_id, departamento_id)
-         VALUES ($1, $2, $3, $4, $5)`,
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO UPDATE SET
+           nombre = EXCLUDED.nombre,
+           ubigeo = EXCLUDED.ubigeo,
+           provincia_id = EXCLUDED.provincia_id,
+           departamento_id = EXCLUDED.departamento_id`,
         [
           Number(id),
           formatUbigeoName(nombreRaw),
@@ -138,4 +150,18 @@ export async function importUbigeo(pool: Pool): Promise<void> {
   console.log(
     `Ubigeo importado: ${deptRows.length} departamentos, ${provRows.length} provincias, ${distRows.length} distritos.`,
   );
+}
+
+export async function importUbigeoIfNeeded(pool: Pool): Promise<void> {
+  const result = await pool.query<{ count: string }>(
+    "SELECT COUNT(*)::text AS count FROM departamentos",
+  );
+  const count = Number(result.rows[0]?.count ?? 0);
+
+  if (count > 0) {
+    await syncUbicaciones(pool);
+    return;
+  }
+
+  await importUbigeo(pool);
 }

@@ -80,17 +80,6 @@ export default function MobileNav({ items }: Props) {
                   <span className="mobile-nav-link-text">{item.label}</span>
                   <span
                     className="nav-link-indicator mobile-nav-link-indicator"
-                    style={{
-                      backgroundColor: "var(--color-brand-red)",
-                      WebkitMaskImage: "url('/libro.svg')",
-                      WebkitMaskRepeat: "no-repeat",
-                      WebkitMaskPosition: "center",
-                      WebkitMaskSize: "contain",
-                      maskImage: "url('/libro.svg')",
-                      maskRepeat: "no-repeat",
-                      maskPosition: "center",
-                      maskSize: "contain",
-                    }}
                     aria-hidden="true"
                   />
                 </a>

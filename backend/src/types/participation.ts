@@ -61,6 +61,7 @@ interface ParticipationRow {
   trabajo_enlace: string;
   tipo_archivo: TipoArchivo;
   estado: EstadoTrabajo;
+  permite_reenvio: boolean;
   fecha_envio: Date;
 }
 
@@ -85,7 +86,7 @@ export function mapRow(row: ParticipationRow): ParticipationRecord {
     fileStatus: "ok",
     fileStatusDetail: statusDetail(row.estado, row.tipo_archivo),
     estado: row.estado,
-    reuploadAllowed: false,
+    reuploadAllowed: row.permite_reenvio,
     submittedAt: row.fecha_envio.toISOString(),
   };
 }
@@ -105,6 +106,6 @@ function statusDetail(estado: EstadoTrabajo, tipo: TipoArchivo): string {
   }
 }
 
-export function canReupload(_record: ParticipationRecord): boolean {
-  return false;
+export function canReupload(record: ParticipationRecord): boolean {
+  return record.reuploadAllowed;
 }
